@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <inttypes.h> // PRIxYY
 #include "event_queue.h"
+#include "hid/input.h"
 
 namespace visef
 {
@@ -88,6 +89,28 @@ namespace visef
                 m_height = res.m_height;
                 reset = true;
             }
+            break;
+
+            case EventType::Button:
+            {
+                fprintf(stderr, "asd");
+                ButtonEvent& btn = ev.m_button;
+
+                switch (btn.m_device)
+                {
+                case InputDeviceType::Keyboard:
+                    if (btn.m_pressed)
+                    {
+                        fprintf(stderr, "Key \"%s\" is down\n", getKeyName(btn.m_button));
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Key \"%s\" is up\n", getKeyName(btn.m_button));
+                    }
+                    break;
+                }
+            }
+            break;
 
             default:
                 break;

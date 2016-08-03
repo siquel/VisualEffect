@@ -10,6 +10,7 @@ namespace visef
         {
             Exit,
             Resolution,
+            Button,
             Count
         };
     };
@@ -21,10 +22,20 @@ namespace visef
         uint16_t m_height;
     };
 
+    struct ButtonEvent
+    {
+        uint16_t m_type;
+        // TODO encode
+        uint16_t m_device;  // type of device
+        uint16_t m_button;  // scancode of button
+        uint16_t m_pressed; // 0 up, 1 down
+    };
+
     union Event
     {
         uint16_t m_type;
         ResolutionEvent m_resolution;
+        ButtonEvent m_button;
     };
 
     const uint32_t MaxEvents = 4096u;
@@ -47,6 +58,18 @@ namespace visef
             ev.m_resolution.m_height = height;
 
             push(ev);
+        }
+
+        void pushButtonEvent(uint16_t device, uint16_t button, uint16_t pressed)
+        {
+            Event event;
+            ButtonEvent& ev = event.m_button;
+            ev.m_type = EventType::Button;
+            ev.m_device = device;
+            ev.m_button = button;
+            ev.m_pressed = pressed;
+
+            push(event);
         }
     };
 }
