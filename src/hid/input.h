@@ -18,42 +18,42 @@ namespace visef
     struct Key 
     {
         enum Enum {
-            A = 0,        ///< The A key
-            B,            ///< The B key
-            C,            ///< The C key
-            D,            ///< The D key
-            E,            ///< The E key
-            F,            ///< The F key
-            G,            ///< The G key
-            H,            ///< The H key
-            I,            ///< The I key
-            J,            ///< The J key
-            K,            ///< The K key
-            L,            ///< The L key
-            M,            ///< The M key
-            N,            ///< The N key
-            O,            ///< The O key
-            P,            ///< The P key
-            Q,            ///< The Q key
-            R,            ///< The R key
-            S,            ///< The S key
-            T,            ///< The T key
-            U,            ///< The U key
-            V,            ///< The V key
-            W,            ///< The W key
-            X,            ///< The X key
-            Y,            ///< The Y key
-            Z,            ///< The Z key
-            D0,           ///< The 0 key
-            D1,           ///< The 1 key
-            D2,           ///< The 2 key
-            D3,           ///< The 3 key
-            D4,           ///< The 4 key
-            D5,           ///< The 5 key
-            D6,           ///< The 6 key
-            D7,           ///< The 7 key
-            D8,           ///< The 8 key
-            D9,           ///< The 9 key
+            KeyA = 0,        ///< The A key
+            KeyB,            ///< The B key
+            KeyC,            ///< The C key
+            KeyD,            ///< The D key
+            KeyE,            ///< The E key
+            KeyF,            ///< The F key
+            KeyG,            ///< The G key
+            KeyH,            ///< The H key
+            KeyI,            ///< The I key
+            KeyJ,            ///< The J key
+            KeyK,            ///< The K key
+            KeyL,            ///< The L key
+            KeyM,            ///< The M key
+            KeyN,            ///< The N key
+            KeyO,            ///< The O key
+            KeyP,            ///< The P key
+            KeyQ,            ///< The Q key
+            KeyR,            ///< The R key
+            KeyS,            ///< The S key
+            KeyT,            ///< The T key
+            KeyU,            ///< The U key
+            KeyV,            ///< The V key
+            KeyW,            ///< The W key
+            KeyX,            ///< The X key
+            KeyY,            ///< The Y key
+            KeyZ,            ///< The Z key
+            Key0,           ///< The 0 key
+            Key1,           ///< The 1 key
+            Key2,           ///< The 2 key
+            Key3,           ///< The 3 key
+            Key4,           ///< The 4 key
+            Key5,           ///< The 5 key
+            Key6,           ///< The 6 key
+            Key7,           ///< The 7 key
+            Key8,           ///< The 8 key
+            Key9,           ///< The 9 key
             F1,           ///< The F1 key
             F2,           ///< The F2 key
             F3,           ///< The F3 key
@@ -78,16 +78,16 @@ namespace visef
             F22,          ///< The F22 key
             F23,          ///< The F23 key
             F24,          ///< The F24 key
-            Numpad0,      ///< The numpad 0 key
-            Numpad1,      ///< The numpad 1 key
-            Numpad2,      ///< The numpad 2 key
-            Numpad3,      ///< The numpad 3 key
-            Numpad4,      ///< The numpad 4 key
-            Numpad5,      ///< The numpad 5 key
-            Numpad6,      ///< The numpad 6 key
-            Numpad7,      ///< The numpad 7 key
-            Numpad8,      ///< The numpad 8 key
-            Numpad9,      ///< The numpad 9 key
+            NumPad0,      ///< The numpad 0 key
+            NumPad1,      ///< The numpad 1 key
+            NumPad2,      ///< The numpad 2 key
+            NumPad3,      ///< The numpad 3 key
+            NumPad4,      ///< The numpad 4 key
+            NumPad5,      ///< The numpad 5 key
+            NumPad6,      ///< The numpad 6 key
+            NumPad7,      ///< The numpad 7 key
+            NumPad8,      ///< The numpad 8 key
+            NumPad9,      ///< The numpad 9 key
             Escape,       ///< The Escape key
             LControl,     ///< The left Control key
             LShift,       ///< The left Shift key
@@ -98,7 +98,36 @@ namespace visef
             RAlt,         ///< The right Alt key
             RSystem,      ///< The right OS specific key
             Menu,         ///< The Menu key
-
+            Return,       ///< The Enter key
+            Tab,          ///< The Tab key
+            Backspace,    ///< The backspace key
+            Space,        ///< The Space key
+            Up,
+            Down,
+            Left,
+            Right,
+            Insert,
+            Delete,
+            Home,
+            End,
+            PageUp,
+            PageDown,
+            Print,
+            Plus,
+            Minus,
+            LeftBracket,
+            RightBracket,
+            Semicolon,
+            Quote,
+            Comma,
+            Period,
+            Slash,
+            Backslash,
+            Tilde,
+            CapsLock,
+            ScrollLock,
+            Multiply,
+            Divide,
             Count
         };
     };

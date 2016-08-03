@@ -15,104 +15,7 @@ namespace visef
 {
     static bool s_exit = false;
 
-    Key::Enum translateKey(UINT vkey) 
-    {
-        switch (vkey)
-        {
-
-        case VK_ESCAPE: return Key::Escape;
-        case VK_LCONTROL: return Key::LControl;
-        case VK_LSHIFT: return Key::LShift;
-        case VK_LMENU: return Key::LAlt;
-        case VK_LWIN: return Key::LSystem;
-
-        case VK_RCONTROL: return Key::RControl;
-        case VK_RSHIFT: return Key::RShift;
-        case VK_RMENU: return Key::RAlt;
-        case VK_RWIN: return Key::RSystem;
-            // Digits
-        case 0x30: return Key::D0;
-        case 0x31: return Key::D1;
-        case 0x32: return Key::D2;
-        case 0x33: return Key::D3;
-        case 0x34: return Key::D4;
-        case 0x35: return Key::D5;
-        case 0x36: return Key::D6;
-        case 0x37: return Key::D7;
-        case 0x38: return Key::D8;
-        case 0x39: return Key::D9;
-
-            // Letters
-        case 0x41: return Key::A;
-        case 0x42: return Key::B;
-        case 0x43: return Key::C;
-        case 0x44: return Key::D;
-        case 0x45: return Key::E;
-        case 0x46: return Key::F;
-        case 0x47: return Key::G;
-        case 0x48: return Key::H;
-        case 0x49: return Key::I;
-
-        case 0x4A: return Key::J;
-        case 0x4B: return Key::K;
-        case 0x4C: return Key::L;
-        case 0x4D: return Key::M;
-        case 0x4E: return Key::N;
-        case 0x4F: return Key::O;
-
-        case 0x50: return Key::P;
-        case 0x51: return Key::Q;
-        case 0x52: return Key::R;
-        case 0x53: return Key::S;
-        case 0x54: return Key::T;
-        case 0x55: return Key::U;
-        case 0x56: return Key::V;
-        case 0x57: return Key::W;
-        case 0x58: return Key::X;
-        case 0x59: return Key::Y;
-
-        case 0x5A: return Key::Z;
-
-        case VK_NUMPAD0: return Key::Numpad0;
-        case VK_NUMPAD1: return Key::Numpad1;
-        case VK_NUMPAD2: return Key::Numpad2;
-        case VK_NUMPAD3: return Key::Numpad3;
-        case VK_NUMPAD4: return Key::Numpad4;
-        case VK_NUMPAD5: return Key::Numpad5;
-        case VK_NUMPAD6: return Key::Numpad6;
-        case VK_NUMPAD7: return Key::Numpad7;
-        case VK_NUMPAD8: return Key::Numpad8;
-        case VK_NUMPAD9: return Key::Numpad9;
-
-        case VK_F1: return Key::F1;
-        case VK_F2: return Key::F2;
-        case VK_F3: return Key::F3;
-        case VK_F4: return Key::F4;
-        case VK_F5: return Key::F5;
-        case VK_F6: return Key::F6;
-        case VK_F7: return Key::F7;
-        case VK_F8: return Key::F8;
-        case VK_F9: return Key::F9;
-        case VK_F10: return Key::F10;
-        case VK_F11: return Key::F11;
-        case VK_F12: return Key::F12;
-        case VK_F13: return Key::F13;
-        case VK_F14: return Key::F14;
-        case VK_F15: return Key::F15;
-        case VK_F16: return Key::F16;
-        case VK_F17: return Key::F17;
-        case VK_F18: return Key::F18;
-        case VK_F19: return Key::F19;
-        case VK_F20: return Key::F20;
-        case VK_F21: return Key::F21;
-        case VK_F22: return Key::F22;
-        case VK_F23: return Key::F23;
-        case VK_F24: return Key::F24;
-
-            // TODO add more keys
-        default: return Key::Count;
-        }
-    }
+    static uint8_t s_translateKey[256];
 
     struct MainThreadArgs
     {
@@ -131,7 +34,117 @@ namespace visef
         Context() :
             m_hwnd(NULL)
         {
-
+            memset(s_translateKey, 0, sizeof(s_translateKey));
+            s_translateKey[VK_CAPITAL] = Key::CapsLock;
+            s_translateKey[VK_LCONTROL] = Key::LControl;
+            s_translateKey[VK_RCONTROL] = Key::RControl;
+            s_translateKey[VK_LSHIFT] = Key::LShift;
+            s_translateKey[VK_RSHIFT] = Key::RShift;
+            s_translateKey[VK_LMENU] = Key::LAlt;
+            s_translateKey[VK_RMENU] = Key::RAlt;
+            s_translateKey[VK_LWIN] = Key::LSystem;
+            s_translateKey[VK_RWIN] = Key::RSystem;
+            s_translateKey[VK_SCROLL] = Key::ScrollLock;
+            s_translateKey[VK_MULTIPLY] = Key::Multiply;
+            s_translateKey[VK_DIVIDE] = Key::Divide;
+            s_translateKey[VK_ESCAPE] = Key::Escape;
+            s_translateKey[VK_RETURN] = Key::Return;
+            s_translateKey[VK_TAB] = Key::Tab;
+            s_translateKey[VK_BACK] = Key::Backspace;
+            s_translateKey[VK_SPACE] = Key::Space;
+            s_translateKey[VK_UP] = Key::Up;
+            s_translateKey[VK_DOWN] = Key::Down;
+            s_translateKey[VK_LEFT] = Key::Left;
+            s_translateKey[VK_RIGHT] = Key::Right;
+            s_translateKey[VK_INSERT] = Key::Insert;
+            s_translateKey[VK_DELETE] = Key::Delete;
+            s_translateKey[VK_HOME] = Key::Home;
+            s_translateKey[VK_END] = Key::End;
+            s_translateKey[VK_PRIOR] = Key::PageUp;
+            s_translateKey[VK_NEXT] = Key::PageDown;
+            s_translateKey[VK_SNAPSHOT] = Key::Print;
+            s_translateKey[VK_OEM_PLUS] = Key::Plus;
+            s_translateKey[VK_OEM_MINUS] = Key::Minus;
+            s_translateKey[VK_OEM_4] = Key::LeftBracket;
+            s_translateKey[VK_OEM_6] = Key::RightBracket;
+            s_translateKey[VK_OEM_1] = Key::Semicolon;
+            s_translateKey[VK_OEM_7] = Key::Quote;
+            s_translateKey[VK_OEM_COMMA] = Key::Comma;
+            s_translateKey[VK_OEM_PERIOD] = Key::Period;
+            s_translateKey[VK_DECIMAL] = Key::Period;
+            s_translateKey[VK_OEM_2] = Key::Slash;
+            s_translateKey[VK_OEM_5] = Key::Backslash;
+            s_translateKey[VK_OEM_3] = Key::Tilde;
+            s_translateKey[VK_F1] = Key::F1;
+            s_translateKey[VK_F2] = Key::F2;
+            s_translateKey[VK_F3] = Key::F3;
+            s_translateKey[VK_F4] = Key::F4;
+            s_translateKey[VK_F5] = Key::F5;
+            s_translateKey[VK_F6] = Key::F6;
+            s_translateKey[VK_F7] = Key::F7;
+            s_translateKey[VK_F8] = Key::F8;
+            s_translateKey[VK_F9] = Key::F9;
+            s_translateKey[VK_F10] = Key::F10;
+            s_translateKey[VK_F11] = Key::F11;
+            s_translateKey[VK_F12] = Key::F12;
+            s_translateKey[VK_F13] = Key::F13;
+            s_translateKey[VK_F14] = Key::F14;
+            s_translateKey[VK_F15] = Key::F15;
+            s_translateKey[VK_F16] = Key::F16;
+            s_translateKey[VK_F17] = Key::F17;
+            s_translateKey[VK_F18] = Key::F18;
+            s_translateKey[VK_F19] = Key::F19;
+            s_translateKey[VK_F20] = Key::F20;
+            s_translateKey[VK_F21] = Key::F21;
+            s_translateKey[VK_F22] = Key::F22;
+            s_translateKey[VK_F23] = Key::F23;
+            s_translateKey[VK_F24] = Key::F24;
+            s_translateKey[VK_NUMPAD0] = Key::NumPad0;
+            s_translateKey[VK_NUMPAD1] = Key::NumPad1;
+            s_translateKey[VK_NUMPAD2] = Key::NumPad2;
+            s_translateKey[VK_NUMPAD3] = Key::NumPad3;
+            s_translateKey[VK_NUMPAD4] = Key::NumPad4;
+            s_translateKey[VK_NUMPAD5] = Key::NumPad5;
+            s_translateKey[VK_NUMPAD6] = Key::NumPad6;
+            s_translateKey[VK_NUMPAD7] = Key::NumPad7;
+            s_translateKey[VK_NUMPAD8] = Key::NumPad8;
+            s_translateKey[VK_NUMPAD9] = Key::NumPad9;
+            s_translateKey[uint8_t('0')] = Key::Key0;
+            s_translateKey[uint8_t('1')] = Key::Key1;
+            s_translateKey[uint8_t('2')] = Key::Key2;
+            s_translateKey[uint8_t('3')] = Key::Key3;
+            s_translateKey[uint8_t('4')] = Key::Key4;
+            s_translateKey[uint8_t('5')] = Key::Key5;
+            s_translateKey[uint8_t('6')] = Key::Key6;
+            s_translateKey[uint8_t('7')] = Key::Key7;
+            s_translateKey[uint8_t('8')] = Key::Key8;
+            s_translateKey[uint8_t('9')] = Key::Key9;
+            s_translateKey[uint8_t('A')] = Key::KeyA;
+            s_translateKey[uint8_t('B')] = Key::KeyB;
+            s_translateKey[uint8_t('C')] = Key::KeyC;
+            s_translateKey[uint8_t('D')] = Key::KeyD;
+            s_translateKey[uint8_t('E')] = Key::KeyE;
+            s_translateKey[uint8_t('F')] = Key::KeyF;
+            s_translateKey[uint8_t('G')] = Key::KeyG;
+            s_translateKey[uint8_t('H')] = Key::KeyH;
+            s_translateKey[uint8_t('I')] = Key::KeyI;
+            s_translateKey[uint8_t('J')] = Key::KeyJ;
+            s_translateKey[uint8_t('K')] = Key::KeyK;
+            s_translateKey[uint8_t('L')] = Key::KeyL;
+            s_translateKey[uint8_t('M')] = Key::KeyM;
+            s_translateKey[uint8_t('N')] = Key::KeyN;
+            s_translateKey[uint8_t('O')] = Key::KeyO;
+            s_translateKey[uint8_t('P')] = Key::KeyP;
+            s_translateKey[uint8_t('Q')] = Key::KeyQ;
+            s_translateKey[uint8_t('R')] = Key::KeyR;
+            s_translateKey[uint8_t('S')] = Key::KeyS;
+            s_translateKey[uint8_t('T')] = Key::KeyT;
+            s_translateKey[uint8_t('U')] = Key::KeyU;
+            s_translateKey[uint8_t('V')] = Key::KeyV;
+            s_translateKey[uint8_t('W')] = Key::KeyW;
+            s_translateKey[uint8_t('X')] = Key::KeyX;
+            s_translateKey[uint8_t('Y')] = Key::KeyY;
+            s_translateKey[uint8_t('Z')] = Key::KeyZ;
         }
 
         int32_t run(int argc, char** argv)
@@ -298,10 +311,10 @@ namespace visef
                 }
 
                 bool isDown = !((flags & RI_KEY_BREAK) != 0);
-                
+
                 m_eventQueue.pushButtonEvent(
                     InputDeviceType::Keyboard,
-                    translateKey(vkey),
+                    s_translateKey[vkey],
                     isDown
                     );
             }
