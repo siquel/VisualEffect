@@ -2,6 +2,8 @@
 #include <bgfx/bgfx.h>
 #include <bx/timer.h>
 #include <new>
+#include <stdio.h>
+#include <inttypes.h> // PRIxYY
 #include "event_queue.h"
 
 namespace visef
@@ -11,6 +13,8 @@ namespace visef
     App::App() :
         m_lastDeltaTime(0.f),
         m_timeSinceStart(0.0),
+        m_width(0),
+        m_height(0),
         m_quit(false)
     {
 
@@ -50,7 +54,7 @@ namespace visef
                 );
 
             // TODO get width & height some other way
-            bgfx::setViewRect(0, 0, 0, uint16_t(1280), uint16_t(720));
+            bgfx::setViewRect(0, 0, 0, m_width, m_height);
 
             bgfx::touch(0);
 
@@ -63,6 +67,7 @@ namespace visef
     bool App::processEvents()
     {
         bool exit = false;
+        bool reset = false;
 
         Event ev;
         while (nextEvent(ev))
@@ -73,9 +78,26 @@ namespace visef
                 exit = true;
                 break;
 
+            case EventType::Resolution:
+            {
+                ResolutionEvent& res = ev.m_resolution;
+
+                fprintf(stderr, "Changing resolution to %" PRIu16 "x%" PRIu16 "\n", res.m_width, res.m_height);
+
+                m_width = res.m_width;
+                m_height = res.m_height;
+                reset = true;
+            }
+
             default:
                 break;
             }
+        }
+
+        if (reset)
+        {
+            // reset backbuffer
+            bgfx::reset(m_width, m_height, BGFX_RESET_NONE);
         }
 
         return exit;

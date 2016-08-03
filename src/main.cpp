@@ -104,6 +104,15 @@ namespace visef
                 m_eventQueue.pushExitEvent();
                 return 0;
             }
+
+            case WM_SIZE:
+            {
+                uint32_t width = LOWORD(lparam);
+                uint32_t height = HIWORD(lparam);
+                m_eventQueue.pushResolutionEvent(width, height);
+            }
+            break;
+
             case WM_KEYDOWN:
             case WM_SYSKEYDOWN:
             case WM_KEYUP:

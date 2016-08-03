@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdint.h>
 
 namespace visef
 {
@@ -15,8 +15,12 @@ namespace visef
 
         bool processEvents();
 
+    private:
         float m_lastDeltaTime; // in seconds
         double m_timeSinceStart; // in seconds
+
+        uint16_t m_width;
+        uint16_t m_height;
 
         bool m_quit; // should we exit
     };
