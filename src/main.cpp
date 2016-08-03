@@ -4,6 +4,7 @@
 #include <bx/thread.h>
 #include <bx/mutex.h>
 
+#include "event_queue.h"
 #include "visef.h"
 
 #define WINDOW_DEFAULT_WIDTH 1280
@@ -100,7 +101,7 @@ namespace visef
             case WM_CLOSE:
             {
                 s_exit = true;
-                // post quit
+                m_eventQueue.pushExitEvent();
                 return 0;
             }
             case WM_KEYDOWN:
@@ -122,6 +123,7 @@ namespace visef
         static LRESULT CALLBACK windowProc(HWND hwnd, UINT id, WPARAM wparam, LPARAM lparam);
 
         HWND m_hwnd;
+        EventQueue m_eventQueue;
     };
 
     static Context s_ctx;
@@ -129,6 +131,12 @@ namespace visef
     LRESULT CALLBACK Context::windowProc(HWND hwnd, UINT id, WPARAM wparam, LPARAM lparam)
     {
         return s_ctx.process(hwnd, id, wparam, lparam);
+    }
+
+    // consumer only
+    bool nextEvent(Event& ev)
+    {
+        return s_ctx.m_eventQueue.pop(ev);
     }
 }
 

@@ -30,7 +30,7 @@ namespace visef
     class SpScCircularQueue
     {
     public:
-        CircularQueue() :
+        SpScCircularQueue() :
             m_tail(0),
             m_head(0)
         {
@@ -60,7 +60,7 @@ namespace visef
         bool pop(Ty& item)
         {
             // get head
-            const int32_t currentHead = head.load(); 
+            const int32_t currentHead = m_head.load(); 
             // compare head to snapshot of tail
             if (currentHead == m_tail.load())        
             {
