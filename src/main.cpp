@@ -46,6 +46,7 @@ namespace visef
             s_translateKey[VK_RWIN] = Key::RSystem;
             s_translateKey[VK_SCROLL] = Key::ScrollLock;
             s_translateKey[VK_MULTIPLY] = Key::Multiply;
+            s_translateKey[VK_PAUSE] = Key::Pause;
             s_translateKey[VK_DIVIDE] = Key::Divide;
             s_translateKey[VK_ESCAPE] = Key::Escape;
             s_translateKey[VK_RETURN] = Key::Return;

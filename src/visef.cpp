@@ -93,7 +93,6 @@ namespace visef
 
             case EventType::Button:
             {
-                fprintf(stderr, "asd");
                 ButtonEvent& btn = ev.m_button;
 
                 switch (btn.m_device)

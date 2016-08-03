@@ -114,7 +114,8 @@ namespace visef
         "CapsLock",
         "ScrollLock",
         "Multiply",
-        "Divide"
+        "Divide",
+        "Pause"
     };
 
     static_assert(BX_COUNTOF(s_scancodeNames) == Key::Count, "Invalid amount of scan codes");

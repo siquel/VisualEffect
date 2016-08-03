@@ -128,6 +128,7 @@ namespace visef
             ScrollLock,
             Multiply,
             Divide,
+            Pause,
             Count
         };
     };
