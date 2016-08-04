@@ -117,6 +117,11 @@ namespace visef
             bgfx::touch(0);
         }
 
+        void shutdown()
+        {
+
+        }
+
         glm::mat4 m_proj;
         glm::mat4 m_view;
 
@@ -144,5 +149,10 @@ namespace visef
     void render(float dt)
     {
         s_demo.render(dt);
+    }
+
+    void demoShutdown()
+    {
+        s_demo.shutdown();
     }
 }

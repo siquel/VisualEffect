@@ -16,6 +16,7 @@ namespace visef
     extern void demoInit();
     extern void update(float dt);
     extern void render(float dt);
+    extern void demoShutdown();
 
     App::App() :
         m_lastDeltaTime(0.f),
@@ -73,6 +74,8 @@ namespace visef
 
             bgfx::frame();
         }
+
+        demoShutdown();
 
         bgfx::shutdown();
     }
