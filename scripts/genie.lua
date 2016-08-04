@@ -73,3 +73,6 @@ project "demo"
 group "libs"
 
 bgfxProject("", "StaticLib", { "BGFX_CONFIG_RENDERER_OPENGL=44" })
+
+group "tools"
+dofile("shaderc.lua")
