@@ -121,7 +121,7 @@ namespace visef
 
     static_assert(BX_COUNTOF(s_scancodeNames) == Key::Count, "Invalid amount of scan codes");
 
-    const char* getKeyName(uint16_t key)
+    const char* getKeyName(uint8_t key)
     {
         VE_ASSERT(key < Key::Count, "Key out of bounds");
         return s_scancodeNames[key];

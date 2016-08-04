@@ -48,6 +48,8 @@ namespace visef
             m_lastDeltaTime = float(time * (1.0 / frequency));
             m_timeSinceStart += m_lastDeltaTime;
 
+            m_input.update();
+
             bgfx::setViewClear(0,
                 BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                 0x303030ff, // clear color
@@ -99,14 +101,7 @@ namespace visef
                 switch (btn.m_device)
                 {
                 case InputDeviceType::Keyboard:
-                    if (btn.m_pressed)
-                    {
-                        fprintf(stderr, "Key \"%s\" is down\n", getKeyName(btn.m_button));
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Key \"%s\" is up\n", getKeyName(btn.m_button));
-                    }
+                    m_input.keyboard().setKeyState(uint8_t(btn.m_button), btn.m_button > 0);
                     break;
                 }
             }

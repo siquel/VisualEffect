@@ -133,7 +133,7 @@ namespace visef
         };
     };
 
-    const char* getKeyName(uint16_t key);
+    const char* getKeyName(uint8_t key);
 
     struct InputDevice
     {

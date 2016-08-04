@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "hid/input_manager.h"
 
 namespace visef
 {
@@ -21,6 +22,8 @@ namespace visef
 
         uint16_t m_width;
         uint16_t m_height;
+
+        InputManager m_input;
 
         bool m_quit; // should we exit
     };

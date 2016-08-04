@@ -26,9 +26,9 @@ namespace visef
     {
         uint16_t m_type;
         // TODO encode
-        uint16_t m_device;  // type of device
-        uint16_t m_button;  // scancode of button
-        uint16_t m_pressed; // 0 up, 1 down
+        uint8_t m_device;  // type of device
+        uint8_t m_button;  // scancode of button
+        uint8_t m_pressed; // 0 up, 1 down
     };
 
     union Event
@@ -60,7 +60,7 @@ namespace visef
             push(ev);
         }
 
-        void pushButtonEvent(uint16_t device, uint16_t button, uint16_t pressed)
+        void pushButtonEvent(uint8_t device, uint8_t button, uint8_t pressed)
         {
             Event event;
             ButtonEvent& ev = event.m_button;
