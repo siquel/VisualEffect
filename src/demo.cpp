@@ -3,7 +3,8 @@
 #include <bgfx/bgfx.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "shaders/fs_cube.bin.h"
+#include "shaders/vs_cube.bin.h"
 namespace visef
 {
 
@@ -88,7 +89,10 @@ namespace visef
                 bgfx::makeRef(s_cubeIndices, sizeof(s_cubeIndices))
                 );
 
-            
+            bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_cube_dx11, sizeof(vs_cube_dx11)));
+            bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_cube_dx11, sizeof(fs_cube_dx11)));
+
+            m_program = bgfx::createProgram(vsh, fsh, true); // destroy shaders
         }
 
         void update(float /*dt*/)
