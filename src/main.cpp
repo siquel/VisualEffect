@@ -7,6 +7,7 @@
 #include "event_queue.h"
 #include "visef.h"
 #include "hid/input.h"
+#include "error/error.h"
 
 #define WINDOW_DEFAULT_WIDTH 1280
 #define WINDOW_DEFAULT_HEIGHT 720
@@ -46,6 +47,10 @@ namespace visef
             s_translateKey[VK_RWIN] = Key::RSystem;
             s_translateKey[VK_SCROLL] = Key::ScrollLock;
             s_translateKey[VK_MULTIPLY] = Key::Multiply;
+            s_translateKey[VK_ADD] = Key::Add;
+            s_translateKey[VK_SUBTRACT] = Key::Subtract;
+            s_translateKey[VK_NUMLOCK] = Key::Numlock;
+            s_translateKey[VK_APPS] = Key::Application;
             s_translateKey[VK_PAUSE] = Key::Pause;
             s_translateKey[VK_DIVIDE] = Key::Divide;
             s_translateKey[VK_ESCAPE] = Key::Escape;
@@ -312,6 +317,12 @@ namespace visef
                 }
 
                 bool isDown = !((flags & RI_KEY_BREAK) != 0);
+
+                // unknown keys... 
+                if (s_translateKey[vkey] == 0 && vkey != uint8_t('A'))
+                {
+                    VE_ASSERT(0, "Unknown key code = %d", vkey);
+                }
 
                 m_eventQueue.pushButtonEvent(
                     InputDeviceType::Keyboard,

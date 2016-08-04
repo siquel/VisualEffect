@@ -126,9 +126,13 @@ namespace visef
             Tilde,
             CapsLock,
             ScrollLock,
-            Multiply,
-            Divide,
+            Multiply, ///< The numpad multiply key
+            Divide,   ///< The numpad divide key
             Pause,
+            Add,      ///< The numpad add key
+            Subtract, ///< The numpad subtract key
+            Numlock,
+            Application, ///< The applications key
             Count
         };
     };
