@@ -57,7 +57,6 @@ namespace visef
                 0 // stencil
                 );
 
-            // TODO get width & height some other way
             bgfx::setViewRect(0, 0, 0, m_width, m_height);
 
             bgfx::touch(0);
@@ -101,7 +100,7 @@ namespace visef
                 switch (btn.m_device)
                 {
                 case InputDeviceType::Keyboard:
-                    m_input.keyboard().setKeyState(uint8_t(btn.m_button), btn.m_button > 0);
+                    m_input.keyboard().setKeyState(btn.m_button, btn.m_button > 0);
                     break;
                 }
             }
