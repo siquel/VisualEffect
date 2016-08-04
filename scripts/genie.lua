@@ -61,6 +61,10 @@ project "demo"
     "bgfx"
   }
 
+  defines {
+    "GLM_FORCE_RADIANS", -- enable radians
+  }
+
   files {
     path.join(VISEF_DIR, "src", "**.cpp"),
     path.join(VISEF_DIR, "src", "**.h"),
