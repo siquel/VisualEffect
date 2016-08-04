@@ -4,6 +4,8 @@ local VISEF_BUILD_DIR = (VISEF_DIR .. ".build/")
 BGFX_DIR = (VISEF_THIRD_DIR .. "bgfx/")
 BX_DIR = (VISEF_THIRD_DIR .. "bx/")
 
+dofile("actions.lua")
+
 solution "visef"
   configurations {
     "debug",
