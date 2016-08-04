@@ -13,7 +13,15 @@
 - [ ] Shadows
 
 # Building
-TODO
+## Windows
+```perl
+# generate projects for vs2015
+vs2015
+# compile tools
+tools
+# compile shaders
+shaders
+```
 
 # Third party libraries used
 * [BGFX](https://github.com/bkaradzic/bgfx) (BSD-2)
