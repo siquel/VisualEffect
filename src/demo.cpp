@@ -119,7 +119,10 @@ namespace visef
 
         void shutdown()
         {
+            bgfx::destroyVertexBuffer(m_vbh);
+            bgfx::destroyIndexBuffer(m_ibh);
 
+            bgfx::destroyProgram(m_program);
         }
 
         glm::mat4 m_proj;
