@@ -134,4 +134,25 @@ namespace visef
     };
 
     const char* getKeyName(uint16_t key);
+
+    struct InputDevice
+    {
+        const static uint32_t MaxKeys = 256;
+
+        InputDevice(uint8_t numKeys);
+
+        ~InputDevice();
+
+        bool isPressed(uint8_t key) const;
+
+        bool isReleased(uint8_t key) const;
+
+        void setKeyState(uint8_t key, bool state);
+
+        void update();
+
+        uint8_t m_numButtons;
+        uint8_t m_lastState[MaxKeys];
+        uint8_t m_state[MaxKeys];
+    };
 }

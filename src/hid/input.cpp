@@ -126,4 +126,41 @@ namespace visef
         VE_ASSERT(key < Key::Count, "Key out of bounds");
         return s_scancodeNames[key];
     }
+
+    InputDevice::InputDevice(uint8_t numKeys) :
+        m_numButtons(numKeys)
+    {
+        VE_ASSERT(numKeys < MaxKeys, "Too many keys");
+        memset(m_state, 0, sizeof(m_state));
+        memset(m_lastState, 0, sizeof(m_lastState));
+    }
+
+    InputDevice::~InputDevice() {}
+
+    void InputDevice::update()
+    {
+        memcpy(m_lastState, m_state, sizeof(uint8_t) * m_numButtons);
+    }
+
+    bool InputDevice::isPressed(uint8_t key) const
+    {
+        VE_ASSERT(key < m_numButtons, "Key out of bounds");
+        // ~0 = 1, ~1 = 0
+        // if m_lastState == 0 && m_state == 1
+        return (~m_lastState[key] & m_state[key]) != 0;
+    }
+
+    bool InputDevice::isReleased(uint8_t key) const
+    {
+        VE_ASSERT(key < m_numButtons, "Key out of bounds");
+        // ~0 = 1, ~1 = 0
+        // if m_lastState == 1 && m_state == 0
+        return (m_lastState[key] & ~m_state[key]) != 0;
+    }
+
+    void InputDevice::setKeyState(uint8_t key, bool state)
+    {
+        VE_ASSERT(key < m_numButtons, "Key out of bounds");
+        m_state[key] = state;
+    }
 }
