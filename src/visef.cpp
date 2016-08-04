@@ -13,6 +13,7 @@ namespace visef
     extern bool nextEvent(Event&);
 
     // implemented in demo.cpp
+    extern void demoInit();
     extern void update(float dt);
     extern void render(float dt);
 
@@ -42,6 +43,8 @@ namespace visef
 
         bgfx::setDebug(BGFX_DEBUG_TEXT);
 
+        demoInit();
+
         int64_t lastTime = bx::getHPCounter();
         int64_t currentTime = 0;
 
@@ -66,7 +69,6 @@ namespace visef
                 const int64_t t1 = bx::getHPCounter();
                 bgfx::dbgTextPrintf(0, 2, 0x6f, "Frame draw:   %7.3f[ms]", (t1 - t0) * (1000.0 / frequency));
             }
-            bgfx::touch(0);
             m_input.update();
 
             bgfx::frame();
