@@ -16,11 +16,11 @@
 ## Windows
 ```perl
 # generate projects for vs2015
-vs2015
+vs2015.bat
 # compile tools
-tools
+tools.bat
 # compile shaders
-shaders
+shaders.bat
 ```
 
 # Third party libraries used
