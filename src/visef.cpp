@@ -53,6 +53,8 @@ namespace visef
         {
             currentTime = bx::getHPCounter();
             const int64_t time = currentTime - lastTime;
+            lastTime = currentTime;
+
             const double frequency = (double)bx::getHPFrequency();
 
             m_lastDeltaTime = float(time * (1.0 / frequency));
@@ -131,6 +133,11 @@ namespace visef
         }
 
         return exit;
+    }
+
+    double App::totalTime() const
+    {
+        return m_timeSinceStart;
     }
 
     char mem[sizeof(App)];

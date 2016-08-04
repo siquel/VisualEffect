@@ -16,6 +16,8 @@ namespace visef
 
         bool processEvents();
 
+        double totalTime() const;
+
     private:
         float m_lastDeltaTime; // in seconds
         double m_timeSinceStart; // in seconds

@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shaders/fs_cube.bin.h"
 #include "shaders/vs_cube.bin.h"
+#include "visef.h"
+#include <stdio.h>
 namespace visef
 {
 
@@ -65,9 +67,9 @@ namespace visef
             m_width(1280), // get these from somewhere else...
             m_height(720)
         {
-            glm::vec3 at(0.0f, 0.0f, 0.f);
-            glm::vec3 eye(0.0f, 0.0f, -35.f);
-            m_proj = glm::perspective(60.f, float(m_width)/float(m_height), 0.1f, 100.f);
+            glm::vec3 eye(0.0f, 1.0f, -0.f);
+            glm::vec3 at(0.0f, 1.0f, -4.f);
+            m_proj = glm::perspective(45.f, float(m_width)/float(m_height), 0.1f, 100.f);
             m_view = glm::lookAt(eye, at, glm::vec3(0.f, 1.f, 0.f));
         }
 
@@ -102,6 +104,8 @@ namespace visef
 
         void render(float /*dt*/)
         {
+            float time = float(app()->totalTime());
+
             // Set view 0 clear state.
             bgfx::setViewClear(0, 
                 BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
@@ -110,11 +114,24 @@ namespace visef
                 0
                 );
 
+            bgfx::touch(0);
+
             bgfx::setViewTransform(0, glm::value_ptr(m_view), glm::value_ptr(m_proj));
 
             bgfx::setViewRect(0, 0, 0, m_width, m_height);
 
-            bgfx::touch(0);
+            glm::mat4 model =
+                glm::translate(glm::mat4(1.f), glm::vec3(-0.f, -0.f, -6.f)) *
+                glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
+
+            bgfx::setTransform(glm::value_ptr(model));
+
+            bgfx::setVertexBuffer(m_vbh);
+            bgfx::setIndexBuffer(m_ibh);
+
+            bgfx::setState(BGFX_STATE_DEFAULT);
+
+            bgfx::submit(0, m_program);
         }
 
         void shutdown()
