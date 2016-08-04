@@ -6,6 +6,11 @@ local shader_root = path.join(VISEF_DIR, "shaders")
 local out_dir = path.join(VISEF_DIR, "src", "shaders")
 SHADERC = path.join(VISEF_DIR, "tools", "bin", "shaderc")
 
+function basename(str)
+	local name = string.gsub(str, "(.*/)(.*)", "%2")
+	return name
+end
+
 newaction {
   trigger = "embed-shader",
   description = "Build embedded shaders",
@@ -20,23 +25,24 @@ newaction {
       for filename in pfile:lines() do
         local file_in = path.join(dir, filename)
         local file_out = string.gsub(filename, "(.sc)", ".bin.h")
-        print (file_out)
         if (string.find(filename, "vs")) then
           os.execute (
-            string.format("%s %s --platform windows -f \"%s\" -o \"%s\"",
+            string.format("%s %s --platform windows -f \"%s\" -o \"%s\" --bin2c %s",
             SHADERC,
             vs_flags,
             file_in,
-            path.join(out_dir, file_out)
+            path.join(out_dir, file_out),
+            string.gsub(filename, ".sc", "") .. "_dx11"
             )
           )
         elseif string.find(filename, "fs") then
           os.execute (
-            string.format("%s %s --platform windows -f \"%s\" -o \"%s\"",
+            string.format("%s %s --platform windows -f \"%s\" -o \"%s\" --bin2c %s",
             SHADERC,
             fs_flags,
             file_in,
-            path.join(out_dir, file_out)
+            path.join(out_dir, file_out),
+            string.gsub(filename, ".sc", "") .. "_dx11"
             )
           )
         end
