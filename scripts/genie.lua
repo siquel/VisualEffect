@@ -54,6 +54,7 @@ project "demo"
     path.join(BX_DIR, "include"),
     path.join(BGFX_DIR, "include"),
     path.join(VISEF_THIRD_DIR),
+    path.join(VISEF_DIR, "src")
   }
 
   links {

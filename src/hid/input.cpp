@@ -1,6 +1,7 @@
 #pragma once
 #include "input.h"
 #include <bx/bx.h>
+#include "error/error.h"
 
 namespace visef
 {
@@ -122,7 +123,7 @@ namespace visef
 
     const char* getKeyName(uint16_t key)
     {
-        // TODO ASSERT
+        VE_ASSERT(key < Key::Count, "Key out of bounds");
         return s_scancodeNames[key];
     }
 }

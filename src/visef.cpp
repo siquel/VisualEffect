@@ -6,6 +6,7 @@
 #include <inttypes.h> // PRIxYY
 #include "event_queue.h"
 #include "hid/input.h"
+#include "error/error.h"
 
 namespace visef
 {
@@ -130,8 +131,7 @@ namespace visef
 
     void run()
     {
-        // TODO: assert
-        if (s_app != NULL) return;
+        VE_ASSERT(s_app == NULL, "App already initialized");
 
         s_app = new (mem)App;
         s_app->run();
