@@ -7,7 +7,10 @@
 - [ ] Bump mapped object
 
 ## Better grade
-- [ ] Image effects? (what are these?)
+- [ ] Bloom
+- [ ] Emboss
+- [ ] Deferred shading sounds fun
+- [ ] Cubemaps?
 - [ ] Reflection
 - [ ] Raymarching
 - [ ] Shadows
