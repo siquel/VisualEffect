@@ -302,10 +302,16 @@ namespace visef
 
         void shutdown()
         {
+            bgfx::destroyUniform(u_params);
+            bgfx::destroyUniform(s_albedo);
+
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
 
+            bgfx::destroyFrameBuffer(m_gbuffer);
+
             bgfx::destroyProgram(m_geomProgram);
+            bgfx::destroyProgram(m_combineProgram);
         }
 
         glm::mat4 m_proj;
