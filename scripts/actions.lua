@@ -1,5 +1,6 @@
 local embedded_shaders = {
-  "cube"
+  "cube",
+  "postprocess"
 }
 
 local shader_root = path.join(VISEF_DIR, "shaders")

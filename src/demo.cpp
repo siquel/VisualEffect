@@ -5,10 +5,23 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shaders/fs_cube.bin.h"
 #include "shaders/vs_cube.bin.h"
+#include "shaders/fs_postprocess.bin.h"
+#include "shaders/vs_postprocess.bin.h"
 #include "visef.h"
 #include <stdio.h>
+#include <bx/fpumath.h>
+
 namespace visef
 {
+    struct RenderPass
+    {
+        enum Enum
+        {
+            Geometry,
+            Light,
+            Combine
+        };
+    };
 
     struct PosColorVertex
     {
@@ -29,7 +42,28 @@ namespace visef
         static bgfx::VertexDecl ms_decl;
     };
 
+    struct PosUv
+    {
+        float m_x;
+        float m_y;
+        float m_z;
+        float m_u;
+        float m_v;
+
+        static void init()
+        {
+            ms_decl
+                .begin()
+                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+                .end();
+        }
+
+        static bgfx::VertexDecl ms_decl;
+    };
+
     bgfx::VertexDecl PosColorVertex::ms_decl;
+    bgfx::VertexDecl PosUv::ms_decl;
 
     static PosColorVertex s_cubeVertices[8] =
     {
@@ -59,6 +93,62 @@ namespace visef
         6, 3, 7,
     };
 
+    void screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width = 1.0f, float _height = 1.0f)
+    {
+        if (bgfx::checkAvailTransientVertexBuffer(3, PosUv::ms_decl))
+        {
+            bgfx::TransientVertexBuffer vb;
+            bgfx::allocTransientVertexBuffer(&vb, 3, PosUv::ms_decl);
+            PosUv* vertex = (PosUv*)vb.data;
+
+            const float minx = -_width;
+            const float maxx = _width;
+            const float miny = 0.0f;
+            const float maxy = _height*2.0f;
+
+            const float texelHalfW = _texelHalf / _textureWidth;
+            const float texelHalfH = _texelHalf / _textureHeight;
+            const float minu = -1.0f + texelHalfW;
+            const float maxu = 1.0f + texelHalfH;
+
+            const float zz = 0.0f;
+
+            float minv = texelHalfH;
+            float maxv = 2.0f + texelHalfH;
+
+            if (_originBottomLeft)
+            {
+                float temp = minv;
+                minv = maxv;
+                maxv = temp;
+
+                minv -= 1.0f;
+                maxv -= 1.0f;
+            }
+
+            vertex[0].m_x = minx;
+            vertex[0].m_y = miny;
+            vertex[0].m_z = zz;
+            vertex[0].m_u = minu;
+            vertex[0].m_v = minv;
+
+            vertex[1].m_x = maxx;
+            vertex[1].m_y = miny;
+            vertex[1].m_z = zz;
+            vertex[1].m_u = maxu;
+            vertex[1].m_v = minv;
+
+            vertex[2].m_x = maxx;
+            vertex[2].m_y = maxy;
+            vertex[2].m_z = zz;
+            vertex[2].m_u = maxu;
+            vertex[2].m_v = maxv;
+
+            bgfx::setVertexBuffer(&vb);
+        }
+    }
+
+
     struct Demo
     {
         Demo() :
@@ -77,7 +167,10 @@ namespace visef
         {
             // Create vertex stream declaration.
             PosColorVertex::init();
+            PosUv::init();
 
+            s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Int1, 1u);
+            u_params = bgfx::createUniform("u_params", bgfx::UniformType::Vec4, 1u);
             // Create static vertex buffer.
             m_vbh = bgfx::createVertexBuffer(
                 // Static data can be passed with bgfx::makeRef
@@ -91,10 +184,55 @@ namespace visef
                 bgfx::makeRef(s_cubeIndices, sizeof(s_cubeIndices))
                 );
 
-            bgfx::ShaderHandle vsh = bgfx::createShader(bgfx::makeRef(vs_cube_dx11, sizeof(vs_cube_dx11)));
-            bgfx::ShaderHandle fsh = bgfx::createShader(bgfx::makeRef(fs_cube_dx11, sizeof(fs_cube_dx11)));
+            const uint32_t samplerFlags = 0
+                | BGFX_TEXTURE_RT
+                | BGFX_TEXTURE_MIN_POINT
+                | BGFX_TEXTURE_MAG_POINT
+                | BGFX_TEXTURE_MIP_POINT
+                | BGFX_TEXTURE_U_CLAMP
+                | BGFX_TEXTURE_V_CLAMP
+                ;
+            
+            m_gbufferTex[0] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
+            m_gbufferTex[1] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
+            m_gbufferTex[2] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::D24, samplerFlags);
 
-            m_program = bgfx::createProgram(vsh, fsh, true); // destroy shaders
+            m_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_gbufferTex), m_gbufferTex, true);
+
+            m_combineProgram = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_postprocess_dx11, sizeof(fs_postprocess_dx11))),
+                true
+                );
+
+            m_geomProgram = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_cube_dx11, sizeof(vs_cube_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_cube_dx11, sizeof(fs_cube_dx11))),
+                true
+                );
+
+            // Set palette color for index 0
+            bgfx::setPaletteColor(0, UINT32_C(0x00000000));
+
+            // Set palette color for index 1
+            bgfx::setPaletteColor(1, UINT32_C(0x303030ff));
+
+            // set geom pass clear state
+            bgfx::setViewClear(
+                RenderPass::Geometry,
+                BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                1.0f,
+                0,
+                1
+                );
+
+            bgfx::setViewClear(
+                RenderPass::Light,
+                BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                1.0f,
+                0,
+                0
+                );
         }
 
         void update(float /*dt*/)
@@ -104,34 +242,62 @@ namespace visef
 
         void render(float /*dt*/)
         {
-            float time = float(app()->totalTime());
 
-            // Set view 0 clear state.
-            bgfx::setViewClear(0, 
-                BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
-                0x303030ff, 
-                1.0f,
-                0
-                );
+            bgfx::setViewRect(RenderPass::Geometry, 0, 0, m_width, m_height);
+            bgfx::setViewRect(RenderPass::Light, 0, 0, m_width, m_height);
+            bgfx::setViewRect(RenderPass::Combine, 0, 0, m_width, m_height);
 
-            bgfx::touch(0);
+            float time = float(app()->totalTime()); (void)time;
 
-            bgfx::setViewTransform(0, glm::value_ptr(m_view), glm::value_ptr(m_proj));
+            float ortho[16];
+            bx::mtxOrtho(ortho, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f);
+            
+            bgfx::setViewFrameBuffer(RenderPass::Geometry, m_gbuffer);
+            bgfx::setViewTransform(RenderPass::Geometry, glm::value_ptr(m_view), glm::value_ptr(m_proj));
+            
+            bgfx::setViewTransform(RenderPass::Light, NULL, ortho);
+            bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
+            //bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
 
-            bgfx::setViewRect(0, 0, 0, m_width, m_height);
+            bgfx::touch(RenderPass::Geometry);
+            //bgfx::touch(RenderPass::Light);
+            bgfx::touch(RenderPass::Combine);
+            // draw into geom pass
+            
+            {
+                glm::mat4 mtx =
+                    glm::translate(glm::mat4(1.f), glm::vec3(-0.f, -0.f, -6.f)) *
+                    glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
 
-            glm::mat4 model =
-                glm::translate(glm::mat4(1.f), glm::vec3(-0.f, -0.f, -6.f)) *
-                glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
+                bgfx::setTransform(glm::value_ptr(mtx));
 
-            bgfx::setTransform(glm::value_ptr(model));
+                bgfx::setVertexBuffer(m_vbh);
+                bgfx::setIndexBuffer(m_ibh);
 
-            bgfx::setVertexBuffer(m_vbh);
-            bgfx::setIndexBuffer(m_ibh);
+                bgfx::setState(0
+                    | BGFX_STATE_RGB_WRITE
+                    | BGFX_STATE_ALPHA_WRITE
+                    | BGFX_STATE_DEPTH_WRITE
+                    | BGFX_STATE_DEPTH_TEST_LESS
+                    | BGFX_STATE_MSAA
+                    );
 
-            bgfx::setState(BGFX_STATE_DEFAULT);
+                bgfx::submit(RenderPass::Geometry, m_geomProgram);
+            }
 
-            bgfx::submit(0, m_program);
+            // draw into combine pass
+            {
+
+                bgfx::setUniform(u_params, &time);
+
+                bgfx::setTexture(0, s_albedo, m_gbuffer, 0);
+                bgfx::setState(0
+                    | BGFX_STATE_RGB_WRITE
+                    | BGFX_STATE_ALPHA_WRITE
+                    );
+                screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
+                bgfx::submit(RenderPass::Combine, m_combineProgram);
+            }
         }
 
         void shutdown()
@@ -139,7 +305,7 @@ namespace visef
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
 
-            bgfx::destroyProgram(m_program);
+            bgfx::destroyProgram(m_geomProgram);
         }
 
         glm::mat4 m_proj;
@@ -151,7 +317,16 @@ namespace visef
         bgfx::VertexBufferHandle m_vbh;
         bgfx::IndexBufferHandle m_ibh;
 
-        bgfx::ProgramHandle m_program;
+        bgfx::FrameBufferHandle m_gbuffer;
+        bgfx::FrameBufferHandle m_lightBuffer;
+
+        bgfx::TextureHandle m_gbufferTex[3]; // position, normal, color + specular
+
+        bgfx::UniformHandle s_albedo;
+        bgfx::UniformHandle u_params;
+
+        bgfx::ProgramHandle m_geomProgram;
+        bgfx::ProgramHandle m_combineProgram;
     };
 
     static Demo s_demo;
