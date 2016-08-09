@@ -10,7 +10,9 @@
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
+#include "pack.h"
 #include "camera.h"
+#include "resource/texture.h"
 namespace visef
 {
     static Camera s_camera;
@@ -32,19 +34,24 @@ namespace visef
         glm::quat m_orientation;
     };
 
-    struct PosColorVertex
+    struct PosNormalTangentTexcoord0Vertex
     {
         float m_x;
         float m_y;
         float m_z;
-        uint32_t m_abgr;
+        uint32_t m_normal;
+        uint32_t m_tangent;
+        uint16_t m_u;
+        uint16_t m_v;
 
         static void init()
         {
             ms_decl
                 .begin()
                 .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+                .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
+                .add(bgfx::Attrib::Tangent, 4, bgfx::AttribType::Uint8, true, true)
+                .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16, true, true)
                 .end();
         };
 
@@ -71,35 +78,53 @@ namespace visef
         static bgfx::VertexDecl ms_decl;
     };
 
-    bgfx::VertexDecl PosColorVertex::ms_decl;
+    bgfx::VertexDecl PosNormalTangentTexcoord0Vertex::ms_decl;
     bgfx::VertexDecl PosUv::ms_decl;
 
-    static PosColorVertex s_cubeVertices[8] =
+    static PosNormalTangentTexcoord0Vertex s_cubeVertices[24] =
     {
-        { -1.0f,  1.0f,  1.0f, 0xff000000 },
-        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
-        { -1.0f, -1.0f,  1.0f, 0xff00ff00 },
-        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
-        { -1.0f,  1.0f, -1.0f, 0xffff0000 },
-        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
-        { -1.0f, -1.0f, -1.0f, 0xffffff00 },
-        { 1.0f, -1.0f, -1.0f, 0xffffffff },
+        { -1.0f,  1.0f,  1.0f, pack4FloatsUint(0.0f,  0.0f,  1.0f), 0,      0,      0 },
+        { 1.0f,  1.0f,  1.0f,  pack4FloatsUint(0.0f,  0.0f,  1.0f), 0, 0x7fff,      0 },
+        { -1.0f, -1.0f,  1.0f, pack4FloatsUint(0.0f,  0.0f,  1.0f), 0,      0, 0x7fff },
+        { 1.0f, -1.0f,  1.0f,  pack4FloatsUint(0.0f,  0.0f,  1.0f), 0, 0x7fff, 0x7fff },
+        { -1.0f,  1.0f, -1.0f, pack4FloatsUint(0.0f,  0.0f, -1.0f), 0,      0,      0 },
+        { 1.0f,  1.0f, -1.0f,  pack4FloatsUint(0.0f,  0.0f, -1.0f), 0, 0x7fff,      0 },
+        { -1.0f, -1.0f, -1.0f, pack4FloatsUint(0.0f,  0.0f, -1.0f), 0,      0, 0x7fff },
+        { 1.0f, -1.0f, -1.0f,  pack4FloatsUint(0.0f,  0.0f, -1.0f), 0, 0x7fff, 0x7fff },
+        { -1.0f,  1.0f,  1.0f, pack4FloatsUint(0.0f,  1.0f,  0.0f), 0,      0,      0 },
+        { 1.0f,  1.0f,  1.0f,  pack4FloatsUint(0.0f,  1.0f,  0.0f), 0, 0x7fff,      0 },
+        { -1.0f,  1.0f, -1.0f, pack4FloatsUint(0.0f,  1.0f,  0.0f), 0,      0, 0x7fff },
+        { 1.0f,  1.0f, -1.0f,  pack4FloatsUint(0.0f,  1.0f,  0.0f), 0, 0x7fff, 0x7fff },
+        { -1.0f, -1.0f,  1.0f, pack4FloatsUint(0.0f, -1.0f,  0.0f), 0,      0,      0 },
+        { 1.0f, -1.0f,  1.0f,  pack4FloatsUint(0.0f, -1.0f,  0.0f), 0, 0x7fff,      0 },
+        { -1.0f, -1.0f, -1.0f, pack4FloatsUint(0.0f, -1.0f,  0.0f), 0,      0, 0x7fff },
+        { 1.0f, -1.0f, -1.0f,  pack4FloatsUint(0.0f, -1.0f,  0.0f), 0, 0x7fff, 0x7fff },
+        { 1.0f, -1.0f,  1.0f,  pack4FloatsUint(1.0f,  0.0f,  0.0f), 0,      0,      0 },
+        { 1.0f,  1.0f,  1.0f,  pack4FloatsUint(1.0f,  0.0f,  0.0f), 0, 0x7fff,      0 },
+        { 1.0f, -1.0f, -1.0f,  pack4FloatsUint(1.0f,  0.0f,  0.0f), 0,      0, 0x7fff },
+        { 1.0f,  1.0f, -1.0f,  pack4FloatsUint(1.0f,  0.0f,  0.0f), 0, 0x7fff, 0x7fff },
+        { -1.0f, -1.0f,  1.0f, pack4FloatsUint(-1.0f,  0.0f,  0.0f), 0,      0,      0 },
+        { -1.0f,  1.0f,  1.0f, pack4FloatsUint(-1.0f,  0.0f,  0.0f), 0, 0x7fff,      0 },
+        { -1.0f, -1.0f, -1.0f, pack4FloatsUint(-1.0f,  0.0f,  0.0f), 0,      0, 0x7fff },
+        { -1.0f,  1.0f, -1.0f, pack4FloatsUint(-1.0f,  0.0f,  0.0f), 0, 0x7fff, 0x7fff },
     };
 
     static const uint16_t s_cubeIndices[36] =
     {
-        0, 1, 2, // 0
-        1, 3, 2,
-        4, 6, 5, // 2
-        5, 6, 7,
-        0, 2, 4, // 4
-        4, 2, 6,
-        1, 5, 3, // 6
-        5, 7, 3,
-        0, 4, 1, // 8
-        4, 5, 1,
-        2, 3, 6, // 10
-        6, 3, 7,
+        0,  2,  1,
+        1,  2,  3,
+        4,  5,  6,
+        5,  7,  6,
+
+        8, 10,  9,
+        9, 10, 11,
+        12, 13, 14,
+        13, 15, 14,
+
+        16, 18, 17,
+        17, 18, 19,
+        20, 21, 22,
+        21, 23, 22,
     };
 
     void screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width = 1.0f, float _height = 1.0f)
@@ -166,10 +191,7 @@ namespace visef
             m_width(1280), // get these from somewhere else...
             m_height(720)
         {
-            glm::vec3 eye(0.0f, 1.0f, -0.f);
-            glm::vec3 at(0.0f, 1.0f, -4.f);
             m_proj = glm::perspective(45.f, float(m_width)/float(m_height), 0.1f, 100.f);
-            m_view = glm::lookAt(eye, at, glm::vec3(0.f, 1.f, 0.f));
         }
 
         void init()
@@ -193,7 +215,7 @@ namespace visef
                 m_walls[3].m_scale = glm::vec3(1.f, 1.f, 5.f);
             }
             // Create vertex stream declaration.
-            PosColorVertex::init();
+            PosNormalTangentTexcoord0Vertex::init();
             PosUv::init();
 
             s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Int1, 1u);
@@ -202,7 +224,7 @@ namespace visef
             m_vbh = bgfx::createVertexBuffer(
                 // Static data can be passed with bgfx::makeRef
                 bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), 
-                PosColorVertex::ms_decl
+                PosNormalTangentTexcoord0Vertex::ms_decl
                 );
 
             // Create static index buffer.
@@ -225,6 +247,9 @@ namespace visef
             m_gbufferTex[2] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::D24, samplerFlags);
 
             m_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_gbufferTex), m_gbufferTex, true);
+
+            s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1, 1U);
+            m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
             m_combineProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
@@ -307,6 +332,8 @@ namespace visef
                 bgfx::setVertexBuffer(m_vbh);
                 bgfx::setIndexBuffer(m_ibh);
 
+                bgfx::setTexture(0, s_diffuse, m_diffuse);
+
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
@@ -366,6 +393,10 @@ namespace visef
 
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
+
+        bgfx::UniformHandle s_diffuse;
+        bgfx::TextureHandle m_diffuse;
+        bgfx::TextureHandle m_normal;
 
         static const uint32_t m_numWalls = 4;
         Wall m_walls[m_numWalls];
