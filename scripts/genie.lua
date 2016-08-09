@@ -72,6 +72,11 @@ project "demo"
     path.join(VISEF_DIR, "src", "**.h"),
   }
 
+  postbuildcommands {
+    string.format("XCOPY \"%s\" \"$(TargetDir)assets\\\" /D /K /Y /E", path.join(VISEF_DIR, "assets")),
+    string.format("XCOPY \"%s\" \"$(ProjectDir)assets\\\" /D /K /Y /E", path.join(VISEF_DIR, "assets"))
+  }
+
 group "libs"
 
 bgfxProject("", "StaticLib", { "BGFX_CONFIG_RENDERER_DIRECT3D11=1" })
