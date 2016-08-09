@@ -364,9 +364,12 @@ namespace visef
         {
             bgfx::destroyUniform(u_params);
             bgfx::destroyUniform(s_albedo);
+            bgfx::destroyUniform(s_diffuse);
 
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
+
+            bgfx::destroyTexture(m_diffuse);
 
             bgfx::destroyFrameBuffer(m_gbuffer);
 
