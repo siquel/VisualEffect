@@ -10,9 +10,11 @@
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
-
+#include "camera.h"
 namespace visef
 {
+    static Camera s_camera;
+
     struct RenderPass
     {
         enum Enum
@@ -21,6 +23,13 @@ namespace visef
             Light,
             Combine
         };
+    };
+
+    struct Wall
+    {
+        glm::vec3 m_position;
+        glm::vec3 m_scale;
+        glm::quat m_orientation;
     };
 
     struct PosColorVertex
@@ -165,6 +174,24 @@ namespace visef
 
         void init()
         {
+
+            s_camera.m_up = glm::vec3(0.f, 1.f, 0.f);
+            s_camera.m_front = glm::vec3(0.f, 0.f, -1.f);
+            s_camera.m_pos = glm::vec3(0.f, 0.f, 0.f);
+
+            {
+                m_walls[0].m_position = glm::vec3(-5.f, 0.f, -5.f);
+                m_walls[0].m_scale = glm::vec3(1.f, 1.f, 5.f);
+
+                m_walls[1].m_position = glm::vec3(5.f, 0.f, -5.f);
+                m_walls[1].m_scale = glm::vec3(1.f, 1.f, 5.f);
+
+                m_walls[2].m_position = glm::vec3(0.f, 0.f, -10.f);
+                m_walls[2].m_scale = glm::vec3(5.f, 1.f, 1.f);
+
+                m_walls[3].m_position = glm::vec3(5.f, 0.f, -5.f);
+                m_walls[3].m_scale = glm::vec3(1.f, 1.f, 5.f);
+            }
             // Create vertex stream declaration.
             PosColorVertex::init();
             PosUv::init();
@@ -235,9 +262,10 @@ namespace visef
                 );
         }
 
-        void update(float /*dt*/)
+        void update(float dt)
         {
-
+            s_camera.update(dt);
+            m_view = glm::lookAt(s_camera.m_pos, s_camera.m_pos + s_camera.m_front, s_camera.m_up);
         }
 
         void render(float /*dt*/)
@@ -264,10 +292,15 @@ namespace visef
             bgfx::touch(RenderPass::Combine);
             // draw into geom pass
             
+            
+
+            for (uint32_t i = 0; i < m_numWalls; ++i)
             {
+
                 glm::mat4 mtx =
-                    glm::translate(glm::mat4(1.f), glm::vec3(-0.f, -0.f, -6.f)) *
-                    glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
+                    glm::translate(glm::mat4(1.f), m_walls[i].m_position) *
+                    glm::scale(glm::mat4(1.f), m_walls[i].m_scale);
+                //glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
 
                 bgfx::setTransform(glm::value_ptr(mtx));
 
@@ -333,6 +366,9 @@ namespace visef
 
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
+
+        static const uint32_t m_numWalls = 4;
+        Wall m_walls[m_numWalls];
     };
 
     static Demo s_demo;

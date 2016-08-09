@@ -115,7 +115,7 @@ namespace visef
                 switch (btn.m_device)
                 {
                 case InputDeviceType::Keyboard:
-                    m_input.keyboard().setKeyState(btn.m_button, btn.m_button > 0);
+                    m_input.keyboard().setKeyState(btn.m_button, btn.m_pressed > 0);
                     break;
                 }
             }
@@ -138,6 +138,11 @@ namespace visef
     double App::totalTime() const
     {
         return m_timeSinceStart;
+    }
+
+    InputManager* App::input()
+    {
+        return &m_input;
     }
 
     char mem[sizeof(App)];

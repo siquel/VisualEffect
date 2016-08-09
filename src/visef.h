@@ -18,6 +18,7 @@ namespace visef
 
         double totalTime() const;
 
+        InputManager* input();
     private:
         float m_lastDeltaTime; // in seconds
         double m_timeSinceStart; // in seconds
