@@ -259,6 +259,9 @@ namespace visef
             s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1, 1U);
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
+            s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Int1);
+            m_normal = loadTexture("assets/wall/wall_n.png");
+
             m_combineProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
                 bgfx::createShader(bgfx::makeRef(fs_postprocess_dx11, sizeof(fs_postprocess_dx11))),
@@ -341,6 +344,7 @@ namespace visef
                 bgfx::setIndexBuffer(m_ibh);
 
                 bgfx::setTexture(0, s_diffuse, m_diffuse);
+                bgfx::setTexture(1, s_normal, m_normal);
 
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
@@ -373,11 +377,13 @@ namespace visef
             bgfx::destroyUniform(u_params);
             bgfx::destroyUniform(s_albedo);
             bgfx::destroyUniform(s_diffuse);
+            bgfx::destroyUniform(s_normal);
 
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
 
             bgfx::destroyTexture(m_diffuse);
+            bgfx::destroyTexture(m_normal);
 
             bgfx::destroyFrameBuffer(m_gbuffer);
 
@@ -407,6 +413,8 @@ namespace visef
 
         bgfx::UniformHandle s_diffuse;
         bgfx::TextureHandle m_diffuse;
+
+        bgfx::UniformHandle s_normal;
         bgfx::TextureHandle m_normal;
 
         static const uint32_t m_numWalls = 4;
