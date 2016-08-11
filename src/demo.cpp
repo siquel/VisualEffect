@@ -13,6 +13,8 @@
 #include "pack.h"
 #include "camera.h"
 #include "resource/texture.h"
+#include "tangents.h"
+
 namespace visef
 {
     static Camera s_camera;
@@ -196,7 +198,13 @@ namespace visef
 
         void init()
         {
-
+            calculateTangents(
+                s_cubeVertices,
+                BX_COUNTOF(s_cubeVertices),
+                PosNormalTangentTexcoord0Vertex::ms_decl,
+                s_cubeIndices,
+                BX_COUNTOF(s_cubeIndices)
+                );
             s_camera.m_up = glm::vec3(0.f, 1.f, 0.f);
             s_camera.m_front = glm::vec3(0.f, 0.f, -1.f);
             s_camera.m_pos = glm::vec3(0.f, 0.f, 0.f);
