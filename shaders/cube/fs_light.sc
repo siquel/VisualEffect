@@ -17,10 +17,19 @@ void main()
   vec3 lightDir = vec3(-0.2, -1.0, -0.3);
   lightDir = normalize(lightDir);
 
+  vec3 view = mul(u_view, vec4(lightDir, 0.0)).xyz;
+  view = -normalize(view);
+
   float ndotl = dot(normal, lightDir);
   vec3 reflected = lightDir - 2.0 * ndotl * normal;
+  float rdotv = dot(reflected, view);
 
-  vec3 lightColor = vec3(0.1, 0.2, 0.3);
+  float diffuse = max(0.0, ndotl);
+
+  float attenuation = 1.0;
+  vec3 lightColor = vec3(1.0, 1.0, 1.0);
+  lightColor = lightColor * saturate(diffuse) * attenuation;
+
   gl_FragColor.xyz = lightColor;
   gl_FragColor.w = 1.0;
 }

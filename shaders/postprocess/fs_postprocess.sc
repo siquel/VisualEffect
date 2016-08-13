@@ -16,6 +16,6 @@ void main()
   // linear
   color = vec4(pow(abs(color.xyz), vec3_splat(2.2) ), color.w);
 
-  vec4 light = toLinear(texture2D(s_light, v_texcoord0));
+  vec4 light = toLinear(texture2D(s_light, uv));
   gl_FragColor = toGamma(color * light);
 }

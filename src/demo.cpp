@@ -329,17 +329,19 @@ namespace visef
             float ortho[16];
             bx::mtxOrtho(ortho, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f);
             
-            bgfx::setViewFrameBuffer(RenderPass::Geometry, m_gbuffer);
+            
             bgfx::setViewTransform(RenderPass::Geometry, glm::value_ptr(m_view), glm::value_ptr(m_proj));
+            bgfx::setViewFrameBuffer(RenderPass::Geometry, m_gbuffer);
             
             bgfx::setViewTransform(RenderPass::Light, NULL, ortho);
-
-            bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
 
-            bgfx::touch(RenderPass::Geometry);
+            bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
+            
+
+            /*bgfx::touch(RenderPass::Geometry);
             bgfx::touch(RenderPass::Light);
-            bgfx::touch(RenderPass::Combine);
+            bgfx::touch(RenderPass::Combine);*/
             // draw into geom pass
             
             
@@ -379,6 +381,7 @@ namespace visef
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
+                    | BGFX_STATE_BLEND_ADD
                     );
 
                 screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
