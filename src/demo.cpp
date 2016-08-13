@@ -298,6 +298,7 @@ namespace visef
                 BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                 1.0f,
                 0,
+                1,
                 1
                 );
 
