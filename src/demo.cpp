@@ -7,6 +7,8 @@
 #include "shaders/vs_cube.bin.h"
 #include "shaders/fs_postprocess.bin.h"
 #include "shaders/vs_postprocess.bin.h"
+#include "shaders/vs_light.bin.h"
+#include "shaders/fs_light.bin.h"
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
@@ -255,12 +257,16 @@ namespace visef
             m_gbufferTex[2] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::D24, samplerFlags);
 
             m_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_gbufferTex), m_gbufferTex, true);
+            m_lightBuffer = bgfx::createFrameBuffer(m_width, m_height, bgfx::TextureFormat::BGRA8, samplerFlags);
 
-            s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1, 1U);
+            s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1);
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
             s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Int1);
             m_normal = loadTexture("assets/wall/wall_n.png");
+
+            s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Int1);
+            s_light = bgfx::createUniform("s_light", bgfx::UniformType::Int1);
 
             m_combineProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
@@ -271,6 +277,12 @@ namespace visef
             m_geomProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_cube_dx11, sizeof(vs_cube_dx11))),
                 bgfx::createShader(bgfx::makeRef(fs_cube_dx11, sizeof(fs_cube_dx11))),
+                true
+                );
+
+            m_lightProgram = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_light_dx11, sizeof(vs_light_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_light_dx11, sizeof(fs_light_dx11))),
                 true
                 );
 
@@ -296,6 +308,7 @@ namespace visef
                 0,
                 0
                 );
+
         }
 
         void update(float dt)
@@ -320,11 +333,12 @@ namespace visef
             bgfx::setViewTransform(RenderPass::Geometry, glm::value_ptr(m_view), glm::value_ptr(m_proj));
             
             bgfx::setViewTransform(RenderPass::Light, NULL, ortho);
+
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
-            //bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
+            bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
 
             bgfx::touch(RenderPass::Geometry);
-            //bgfx::touch(RenderPass::Light);
+            bgfx::touch(RenderPass::Light);
             bgfx::touch(RenderPass::Combine);
             // draw into geom pass
             
@@ -357,12 +371,20 @@ namespace visef
                 bgfx::submit(RenderPass::Geometry, m_geomProgram);
             }
 
+            // draw into light pass
+            {
+                bgfx::setTexture(0, s_normal, m_gbuffer, 1);
+                bgfx::setTexture(1, s_depth, m_gbuffer, 2);
+                bgfx::submit(RenderPass::Light, m_lightProgram);
+            }
+
             // draw into combine pass
             {
 
                 bgfx::setUniform(u_params, &time);
 
                 bgfx::setTexture(0, s_albedo, m_gbuffer, 0);
+                bgfx::setTexture(1, s_light, m_lightBuffer, 0);
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
@@ -403,13 +425,16 @@ namespace visef
         bgfx::FrameBufferHandle m_gbuffer;
         bgfx::FrameBufferHandle m_lightBuffer;
 
-        bgfx::TextureHandle m_gbufferTex[3]; // position, normal, color + specular
+        bgfx::TextureHandle m_gbufferTex[3]; // position, normal, depth
 
         bgfx::UniformHandle s_albedo;
+        bgfx::UniformHandle s_depth;
+        bgfx::UniformHandle s_light;
         bgfx::UniformHandle u_params;
 
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
+        bgfx::ProgramHandle m_lightProgram;
 
         bgfx::UniformHandle s_diffuse;
         bgfx::TextureHandle m_diffuse;
