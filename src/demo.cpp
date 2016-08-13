@@ -375,6 +375,13 @@ namespace visef
             {
                 bgfx::setTexture(0, s_normal, m_gbuffer, 1);
                 bgfx::setTexture(1, s_depth, m_gbuffer, 2);
+
+                bgfx::setState(0
+                    | BGFX_STATE_RGB_WRITE
+                    | BGFX_STATE_ALPHA_WRITE
+                    );
+
+                screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
                 bgfx::submit(RenderPass::Light, m_lightProgram);
             }
 
@@ -383,7 +390,7 @@ namespace visef
 
                 bgfx::setUniform(u_params, &time);
 
-                bgfx::setTexture(0, s_albedo, m_gbuffer, 0);
+                bgfx::setTexture(0, s_albedo, m_lightBuffer, 0);
                 bgfx::setTexture(1, s_light, m_lightBuffer, 0);
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
