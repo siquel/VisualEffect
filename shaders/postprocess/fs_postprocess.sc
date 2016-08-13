@@ -13,6 +13,9 @@ void main()
   vec2 uv = v_texcoord0;
   uv.x += sin( uv.y * 4*2*M_PI + (u_time * 2*M_PI * 0.75)) / 100;
   vec4 color = texture2D(s_albedo, uv);
+  // linear
   color = vec4(pow(abs(color.xyz), vec3_splat(2.2) ), color.w);
-  gl_FragColor = color;
+
+  vec4 light = toLinear(texture2D(s_light, v_texcoord0));
+  gl_FragColor = toGamma(color * light);
 }
