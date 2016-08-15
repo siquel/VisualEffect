@@ -268,6 +268,8 @@ namespace visef
             s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Int1);
             s_light = bgfx::createUniform("s_light", bgfx::UniformType::Int1);
 
+            u_invMVP = bgfx::createUniform("u_invMVP", bgfx::UniformType::Mat4);
+
             m_combineProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
                 bgfx::createShader(bgfx::makeRef(fs_postprocess_dx11, sizeof(fs_postprocess_dx11))),
@@ -339,7 +341,8 @@ namespace visef
 
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
-
+            glm::mat4 invMVP(glm::inverse(m_view * m_proj));
+            bgfx::setUniform(u_invMVP, glm::value_ptr(invMVP));
             /*bgfx::touch(RenderPass::Geometry);
             bgfx::touch(RenderPass::Light);
             bgfx::touch(RenderPass::Combine);*/
@@ -442,7 +445,7 @@ namespace visef
         bgfx::UniformHandle s_depth;
         bgfx::UniformHandle s_light;
         bgfx::UniformHandle u_params;
-
+        bgfx::UniformHandle u_invMVP;
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
         bgfx::ProgramHandle m_lightProgram;

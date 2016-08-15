@@ -27,8 +27,9 @@ void main()
   float diffuse = max(0.0, ndotl);
 
   float attenuation = 1.0;
+  vec3 lightAmbient = vec3(0.1, 0.1, 0.1);
   vec3 lightColor = vec3(1.0, 1.0, 1.0);
-  lightColor = lightColor * saturate(diffuse) * attenuation;
+  lightColor = lightAmbient * lightColor * saturate(diffuse) * attenuation;
 
   gl_FragColor.xyz = lightColor;
   gl_FragColor.w = 1.0;
