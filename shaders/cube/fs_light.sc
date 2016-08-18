@@ -9,28 +9,56 @@ SAMPLER2D(s_depth, 1);
 
 uniform mat4 u_invMVP;
 
+uniform vec4 u_lightColorRGBRadius;
+uniform vec4 u_lightPositionInnerRadius;
+
+#define u_lightColor u_lightColorRGBRadius.xyz
+#define u_radius u_lightColorRGBRadius.w
+#define u_lightPosition u_lightPositionInnerRadius.xyz
+#define u_innerRadius u_lightPositionInnerRadius.w
+
+vec3 calcLight(vec3 wpos, vec3 normal, vec3 viewDir)
+{
+  vec3 lightPos = u_lightPosition - wpos;
+  float attenuation = 1.0 - smoothstep(u_innerRadius, 1.0, length(lightPos) / u_radius);
+
+  vec3 lightDir = normalize(lightPos);
+
+  float nDotL = dot(normal, lightDir);
+  vec3 reflected = lightDir - 2.0 * nDotL * normal;
+
+  float rDotV = dot(reflected, viewDir);
+
+  float diffuse = max(0.0, nDotL);
+  float specular = step(0.0, nDotL) * max(0.0, rDotV);
+
+  vec3 rgb = u_lightColor * saturate(diffuse) * attenuation;
+
+  return rgb;
+}
+
+vec3 clipToWorld(mat4 invViewProj, vec3 clipPos)
+{
+	vec4 wpos = mul(invViewProj, vec4(clipPos, 1.0));
+	return wpos.xyz / wpos.w;
+}
+
 void main()
 {
-  vec3 normal = (texture2D(s_normal, v_texcoord0).xyz) * 2.0 - 1.0;
+  vec3 normal = decodeNormalUint(texture2D(s_normal, v_texcoord0).xyz);
   float depth = texture2D(s_depth, v_texcoord0).x;
 
-  vec3 lightDir = vec3(-0.2, -1.0, -0.3);
-  lightDir = normalize(lightDir);
+  vec3 clip = vec3(v_texcoord0 * 2.0 - 1.0, depth);
+  clip.y = -clip.y;
 
-  vec3 view = mul(u_view, vec4(lightDir, 0.0)).xyz;
-  view = -normalize(view);
+  vec3 wpos = clipToWorld(u_invMVP, clip);
 
-  float ndotl = dot(normal, lightDir);
-  vec3 reflected = lightDir - 2.0 * ndotl * normal;
-  float rdotv = dot(reflected, view);
+  vec3 viewDir = mul(u_view, vec4(wpos, 0.0)).xyz;
+  viewDir = -normalize(viewDir);
 
-  float diffuse = max(0.0, ndotl);
+  vec3 lightColor;
+  lightColor = calcLight(wpos, normal, viewDir);
 
-  float attenuation = 1.0;
-  vec3 lightAmbient = vec3(0.1, 0.1, 0.1);
-  vec3 lightColor = vec3(1.0, 1.0, 1.0);
-  lightColor = lightAmbient * lightColor * saturate(diffuse) * attenuation;
-
-  gl_FragColor.xyz = lightColor;
+  gl_FragColor.xyz = toGamma(lightColor);
   gl_FragColor.w = 1.0;
 }

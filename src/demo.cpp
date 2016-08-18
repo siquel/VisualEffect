@@ -193,7 +193,8 @@ namespace visef
             m_proj(1.f),
             m_view(1.f),
             m_width(1280), // get these from somewhere else...
-            m_height(720)
+            m_height(720),
+            m_numLights(1)
         {
             m_proj = glm::perspective(45.f, float(m_width)/float(m_height), 0.1f, 100.f);
         }
@@ -270,6 +271,9 @@ namespace visef
 
             u_invMVP = bgfx::createUniform("u_invMVP", bgfx::UniformType::Mat4);
 
+            u_lightColorRGBRadius = bgfx::createUniform("u_lightColorRGBRadius", bgfx::UniformType::Vec4);
+            u_lightPositionInnerRadius = bgfx::createUniform("u_lightPositionInnerRadius", bgfx::UniformType::Vec4);
+
             m_combineProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_postprocess_dx11, sizeof(vs_postprocess_dx11))),
                 bgfx::createShader(bgfx::makeRef(fs_postprocess_dx11, sizeof(fs_postprocess_dx11))),
@@ -342,7 +346,6 @@ namespace visef
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
             glm::mat4 invMVP(glm::inverse(m_view * m_proj));
-            bgfx::setUniform(u_invMVP, glm::value_ptr(invMVP));
             /*bgfx::touch(RenderPass::Geometry);
             bgfx::touch(RenderPass::Light);
             bgfx::touch(RenderPass::Combine);*/
@@ -379,17 +382,36 @@ namespace visef
 
             // draw into light pass
             {
-                bgfx::setTexture(0, s_normal, m_gbuffer, 1);
-                bgfx::setTexture(1, s_depth, m_gbuffer, 2);
+                for (uint32_t i = 0; i < m_numLights; ++i)
+                {
+                    glm::vec4 lightPosInnerRadius;
+                    glm::vec3 lightPos(0.0, 0.0, -0.0);
+                    float radius = 2.f;
+                    glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
+                    
 
-                bgfx::setState(0
-                    | BGFX_STATE_RGB_WRITE
-                    | BGFX_STATE_ALPHA_WRITE
-                    | BGFX_STATE_BLEND_ADD
-                    );
+                    lightPosInnerRadius.x = lightPos.x;
+                    lightPosInnerRadius.y = lightPos.y;
+                    lightPosInnerRadius.z = lightPos.z;
+                    lightPosInnerRadius.w = 0.8f;
 
-                screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
-                bgfx::submit(RenderPass::Light, m_lightProgram);
+
+                    bgfx::setUniform(u_lightPositionInnerRadius, glm::value_ptr(lightPosInnerRadius));
+                    bgfx::setUniform(u_lightColorRGBRadius, glm::value_ptr(lightRgbRadius));
+                    bgfx::setUniform(u_invMVP, glm::value_ptr(invMVP));
+
+                    bgfx::setTexture(0, s_normal, m_gbuffer, 1);
+                    bgfx::setTexture(1, s_depth, m_gbuffer, 2);
+
+                    bgfx::setState(0
+                        | BGFX_STATE_RGB_WRITE
+                        | BGFX_STATE_ALPHA_WRITE
+                        | BGFX_STATE_BLEND_ADD
+                        );
+
+                    screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
+                    bgfx::submit(RenderPass::Light, m_lightProgram);
+                }
             }
 
             // draw into combine pass
@@ -449,6 +471,11 @@ namespace visef
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
         bgfx::ProgramHandle m_lightProgram;
+
+        uint32_t m_numLights;
+
+        bgfx::UniformHandle u_lightColorRGBRadius;
+        bgfx::UniformHandle u_lightPositionInnerRadius;
 
         bgfx::UniformHandle s_diffuse;
         bgfx::TextureHandle m_diffuse;
