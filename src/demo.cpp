@@ -345,7 +345,7 @@ namespace visef
 
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
-            glm::mat4 invMVP(glm::inverse(m_view * m_proj));
+            glm::mat4 invMVP(glm::inverse(m_proj * m_view));
             /*bgfx::touch(RenderPass::Geometry);
             bgfx::touch(RenderPass::Light);
             bgfx::touch(RenderPass::Combine);*/
@@ -385,8 +385,8 @@ namespace visef
                 for (uint32_t i = 0; i < m_numLights; ++i)
                 {
                     glm::vec4 lightPosInnerRadius;
-                    glm::vec3 lightPos(0.0, 0.0, -0.0);
-                    float radius = 2.f;
+                    glm::vec3 lightPos(0.0, 0.0, -5.0);
+                    float radius = 6.f;
                     glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
                     
 
