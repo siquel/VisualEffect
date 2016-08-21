@@ -18,10 +18,10 @@ void main()
 		normalize(v_normal)
 	);
 
-	gl_FragData[0] = texture2D(s_diffuse, v_texcoord0);
 
 	normal = normalize(mul(tbn, normal));
-	vec3 wnormal = normalize(mul(u_invView, vec4(normal, 0.0)).xyz);
-	// encode normal
-	gl_FragData[1] = vec4(wnormal * 0.5 + 0.5, 1.0);
+	vec3 wnormal = normalize(mul(u_invView, vec4(normal, 0.0) ).xyz);
+
+	gl_FragData[0] = texture2D(s_diffuse, v_texcoord0);
+	gl_FragData[1] = vec4(encodeNormalUint(wnormal), 1.0);
 }

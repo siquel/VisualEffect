@@ -64,8 +64,8 @@ namespace visef
                 tang[1] += tangent.y;
                 tang[2] += tangent.z;
                 tang[3] += bitanget.x;
-                tang[4] += bitanget.x;
-                tang[5] += bitanget.x;
+                tang[4] += bitanget.y;
+                tang[5] += bitanget.z;
             }
 
         }

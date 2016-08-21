@@ -22,13 +22,14 @@ void main()
 	vec3 viewTangent = normalize(mul(u_view, vec4(wtangent, 0.0)).xyz);
 	vec3 viewNormal = normalize(mul(u_view, vec4(wnormal, 0.0)).xyz);
 	// TBN vectors are perpendicular so we can use cross(T, N) to get B
-	vec3 viewBitangent = cross(viewTangent, viewNormal) * tangent.w;
+	vec3 viewBitangent = cross(viewNormal, viewTangent) * tangent.w;
 
 	// tbn is in view space
 	mat3 tbn = mat3(viewTangent, viewBitangent, viewNormal);
 
 	v_wpos = wpos;
-	v_view = mul( mul(u_view, vec4(wpos, 0.0)).xyz, tbn );
+	vec3 view = mul(u_view, vec4(wpos, 0.0) ).xyz;
+	v_view = mul(view, tbn);
 	v_normal = viewNormal;
 	v_tangent = viewTangent;
 	v_bitangent = viewBitangent;

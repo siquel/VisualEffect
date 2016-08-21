@@ -201,13 +201,6 @@ namespace visef
 
         void init()
         {
-            calculateTangents(
-                s_cubeVertices,
-                BX_COUNTOF(s_cubeVertices),
-                PosNormalTangentTexcoord0Vertex::ms_decl,
-                s_cubeIndices,
-                BX_COUNTOF(s_cubeIndices)
-                );
             s_camera.m_up = glm::vec3(0.f, 1.f, 0.f);
             s_camera.m_front = glm::vec3(0.f, 0.f, -1.f);
             s_camera.m_pos = glm::vec3(0.f, 0.f, 0.f);
@@ -228,6 +221,14 @@ namespace visef
             // Create vertex stream declaration.
             PosNormalTangentTexcoord0Vertex::init();
             PosUv::init();
+
+            calculateTangents(
+                s_cubeVertices,
+                BX_COUNTOF(s_cubeVertices),
+                PosNormalTangentTexcoord0Vertex::ms_decl,
+                s_cubeIndices,
+                BX_COUNTOF(s_cubeIndices)
+                );
 
             s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Int1, 1u);
             u_params = bgfx::createUniform("u_params", bgfx::UniformType::Vec4, 1u);
@@ -264,7 +265,7 @@ namespace visef
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
             s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Int1);
-            m_normal = loadTexture("assets/wall/wall_n.png");
+            m_normal = loadTexture("assets/wall/wall_n2.png");
 
             s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Int1);
             s_light = bgfx::createUniform("s_light", bgfx::UniformType::Int1);
@@ -304,8 +305,8 @@ namespace visef
                 BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                 1.0f,
                 0,
-                1,
                 1
+                
                 );
 
             bgfx::setViewClear(
@@ -385,8 +386,8 @@ namespace visef
                 for (uint32_t i = 0; i < m_numLights; ++i)
                 {
                     glm::vec4 lightPosInnerRadius;
-                    glm::vec3 lightPos(0.0, 0.0, -5.0);
-                    float radius = 6.f;
+                    glm::vec3 lightPos(0.0, 2.0, -5.0);
+                    float radius = 5.f;
                     glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
                     
 
