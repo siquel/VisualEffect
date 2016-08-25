@@ -205,19 +205,6 @@ namespace visef
             s_camera.m_front = glm::vec3(0.f, 0.f, -1.f);
             s_camera.m_pos = glm::vec3(0.f, 0.f, 0.f);
 
-            {
-                m_walls[0].m_position = glm::vec3(-5.f, 0.f, -5.f);
-                m_walls[0].m_scale = glm::vec3(1.f, 1.f, 5.f);
-
-                m_walls[1].m_position = glm::vec3(5.f, 0.f, -5.f);
-                //m_walls[1].m_scale = glm::vec3(1.f, 1.f, 5.f);
-
-                m_walls[2].m_position = glm::vec3(0.f, 0.f, -10.f);
-                //m_walls[2].m_scale = glm::vec3(5.f, 1.f, 1.f);
-
-                m_walls[3].m_position = glm::vec3(0.f, 0.f, -7.f);
-                m_walls[3].m_scale = glm::vec3(1.f, 1.f, 1.f);
-            }
             // Create vertex stream declaration.
             PosNormalTangentTexcoord0Vertex::init();
             PosUv::init();
@@ -529,9 +516,6 @@ namespace visef
 
         bgfx::UniformHandle s_normal;
         bgfx::TextureHandle m_normal;
-
-        static const uint32_t m_numWalls = 4;
-        Wall m_walls[m_numWalls];
     };
 
     static Demo s_demo;
