@@ -194,7 +194,7 @@ namespace visef
             m_view(1.f),
             m_width(1280), // get these from somewhere else...
             m_height(720),
-            m_numLights(1)
+            m_numLights(256)
         {
             m_proj = glm::perspective(45.f, float(m_width)/float(m_height), 0.1f, 100.f);
         }
@@ -210,13 +210,13 @@ namespace visef
                 m_walls[0].m_scale = glm::vec3(1.f, 1.f, 5.f);
 
                 m_walls[1].m_position = glm::vec3(5.f, 0.f, -5.f);
-                m_walls[1].m_scale = glm::vec3(1.f, 1.f, 5.f);
+                //m_walls[1].m_scale = glm::vec3(1.f, 1.f, 5.f);
 
                 m_walls[2].m_position = glm::vec3(0.f, 0.f, -10.f);
-                m_walls[2].m_scale = glm::vec3(5.f, 1.f, 1.f);
+                //m_walls[2].m_scale = glm::vec3(5.f, 1.f, 1.f);
 
-                m_walls[3].m_position = glm::vec3(5.f, 0.f, -5.f);
-                m_walls[3].m_scale = glm::vec3(1.f, 1.f, 5.f);
+                m_walls[3].m_position = glm::vec3(0.f, 0.f, -7.f);
+                m_walls[3].m_scale = glm::vec3(1.f, 1.f, 1.f);
             }
             // Create vertex stream declaration.
             PosNormalTangentTexcoord0Vertex::init();
@@ -265,7 +265,7 @@ namespace visef
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
             s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Int1);
-            m_normal = loadTexture("assets/wall/wall_n2.png");
+            m_normal = loadTexture("assets/wall/wall_n.jpg");
 
             s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Int1);
             s_light = bgfx::createUniform("s_light", bgfx::UniformType::Int1);
@@ -347,49 +347,95 @@ namespace visef
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
             glm::mat4 invMVP(glm::inverse(m_proj * m_view));
-            /*bgfx::touch(RenderPass::Geometry);
-            bgfx::touch(RenderPass::Light);
-            bgfx::touch(RenderPass::Combine);*/
-            // draw into geom pass
-            
-            
 
-            for (uint32_t i = 0; i < m_numWalls; ++i)
+            const uint32_t CubeCount = 10;
+            // draw into geom pass
+            for (uint32_t z = 0; z <= CubeCount; ++z)
+            {
+                for (uint32_t x = 0; x <= CubeCount; ++x)
+                {
+                    glm::mat4 mtx =
+                        glm::translate(glm::mat4(1.f), glm::vec3(float(x) * 4.f, -0.f, -float(z) * 4.f)) *
+                        glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), normalize(glm::vec3(x + 1, 1, z+1)));
+
+                    bgfx::setTransform(glm::value_ptr(mtx));
+
+                    bgfx::setVertexBuffer(m_vbh);
+                    bgfx::setIndexBuffer(m_ibh);
+
+                    bgfx::setTexture(0, s_diffuse, m_diffuse);
+                    bgfx::setTexture(1, s_normal, m_normal);
+
+                    bgfx::setState(0
+                        | BGFX_STATE_RGB_WRITE
+                        | BGFX_STATE_ALPHA_WRITE
+                        | BGFX_STATE_DEPTH_WRITE
+                        | BGFX_STATE_DEPTH_TEST_LESS
+                        | BGFX_STATE_MSAA
+                        );
+
+                    bgfx::submit(RenderPass::Geometry, m_geomProgram);
+                }
+            }
+
+            // draw floor 
             {
 
-                glm::mat4 mtx =
-                    glm::translate(glm::mat4(1.f), m_walls[i].m_position) *
-                    glm::scale(glm::mat4(1.f), m_walls[i].m_scale);
-                //glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), glm::vec3(0, 1, 0));
+                for (uint32_t z = 0; z <= CubeCount * 4; ++z)
+                {
+                    for (uint32_t x = 0; x <= CubeCount * 4; ++x)
+                    {
+                        glm::mat4 mtx =
+                            glm::translate(glm::mat4(1.f), glm::vec3(float(x), -2.5f, -float(z)));
 
-                bgfx::setTransform(glm::value_ptr(mtx));
+                        bgfx::setTransform(glm::value_ptr(mtx));
 
-                bgfx::setVertexBuffer(m_vbh);
-                bgfx::setIndexBuffer(m_ibh);
+                        bgfx::setVertexBuffer(m_vbh);
+                        bgfx::setIndexBuffer(m_ibh);
 
-                bgfx::setTexture(0, s_diffuse, m_diffuse);
-                bgfx::setTexture(1, s_normal, m_normal);
+                        bgfx::setTexture(0, s_diffuse, m_diffuse);
+                        bgfx::setTexture(1, s_normal, m_normal);
 
-                bgfx::setState(0
-                    | BGFX_STATE_RGB_WRITE
-                    | BGFX_STATE_ALPHA_WRITE
-                    | BGFX_STATE_DEPTH_WRITE
-                    | BGFX_STATE_DEPTH_TEST_LESS
-                    | BGFX_STATE_MSAA
-                    );
+                        bgfx::setState(0
+                            | BGFX_STATE_RGB_WRITE
+                            | BGFX_STATE_ALPHA_WRITE
+                            | BGFX_STATE_DEPTH_WRITE
+                            | BGFX_STATE_DEPTH_TEST_LESS
+                            | BGFX_STATE_MSAA
+                            );
 
-                bgfx::submit(RenderPass::Geometry, m_geomProgram);
+                        bgfx::submit(RenderPass::Geometry, m_geomProgram);
+                    }
+                }
             }
+
 
             // draw into light pass
             {
+                float x = 0;
+                float z = 0;
                 for (uint32_t i = 0; i < m_numLights; ++i)
                 {
+                    if (i % CubeCount == 0)
+                    {
+                        x += 1.f;
+                        z = 0.f;
+                    }
+
                     glm::vec4 lightPosInnerRadius;
-                    glm::vec3 lightPos(0.0, 2.0, -5.0);
-                    float radius = 5.f;
+                    
+                    float radius = 2;
                     glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
                     
+                    z += 1.f;
+
+                    glm::vec3 lightPos(x, 0.0, -z);
+
+                    uint8_t val = i & 7;
+                    lightRgbRadius[0] = val & 0x1 ? 1.0f : 0.25f;
+                    lightRgbRadius[1] = val & 0x2 ? 1.0f : 0.25f;
+                    lightRgbRadius[2] = val & 0x4 ? 1.0f : 0.25f;
+
 
                     lightPosInnerRadius.x = lightPos.x;
                     lightPosInnerRadius.y = lightPos.y;

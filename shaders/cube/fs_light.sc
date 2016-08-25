@@ -56,8 +56,10 @@ void main()
   vec3 viewDir = mul(u_view, vec4(wpos, 0.0)).xyz;
   viewDir = -normalize(viewDir);
 
+  float ambient = 0.1;
+
   vec3 lightColor;
-  lightColor = calcLight(wpos, normal, viewDir);
+  lightColor = calcLight(wpos, normal, viewDir) * ambient;
 
   gl_FragColor.xyz = toGamma(lightColor.xyz);
   gl_FragColor.w = 1.0;
