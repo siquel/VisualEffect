@@ -467,19 +467,27 @@ namespace visef
         void shutdown()
         {
             bgfx::destroyUniform(u_params);
+            bgfx::destroyUniform(u_invMVP);
+            bgfx::destroyUniform(u_lightColorRGBRadius);
+            bgfx::destroyUniform(u_lightPositionInnerRadius);
+
             bgfx::destroyUniform(s_albedo);
+            bgfx::destroyUniform(s_light);
             bgfx::destroyUniform(s_diffuse);
             bgfx::destroyUniform(s_normal);
+            bgfx::destroyUniform(s_depth);
 
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
 
             bgfx::destroyTexture(m_diffuse);
             bgfx::destroyTexture(m_normal);
-
+            
             bgfx::destroyFrameBuffer(m_gbuffer);
+            bgfx::destroyFrameBuffer(m_lightBuffer);
 
             bgfx::destroyProgram(m_geomProgram);
+            bgfx::destroyProgram(m_lightProgram);
             bgfx::destroyProgram(m_combineProgram);
         }
 
