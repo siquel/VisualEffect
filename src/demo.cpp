@@ -21,6 +21,10 @@ namespace visef
 {
     static Camera s_camera;
 
+    const uint32_t CubeCount = 5;
+
+    static glm::vec3 s_axis[CubeCount*CubeCount];
+
     struct RenderPass
     {
         enum Enum
@@ -197,6 +201,17 @@ namespace visef
             m_numLights(256)
         {
             m_proj = glm::perspective(45.f, float(m_width)/float(m_height), 0.1f, 100.f);
+
+            for (uint32_t i = 0; i < CubeCount * CubeCount; ++i)
+            {
+                s_axis[i] = normalize(glm::vec3(
+                    float(rand() % 10),
+                    float(rand() % 10),
+                    float(rand() % 10)
+                    ));
+            }
+
+
         }
 
         void init()
@@ -335,7 +350,8 @@ namespace visef
             
             glm::mat4 invMVP(glm::inverse(m_proj * m_view));
 
-            const uint32_t CubeCount = 10;
+            
+
             // draw into geom pass
             for (uint32_t z = 0; z <= CubeCount; ++z)
             {
@@ -343,7 +359,7 @@ namespace visef
                 {
                     glm::mat4 mtx =
                         glm::translate(glm::mat4(1.f), glm::vec3(float(x) * 4.f, -0.f, -float(z) * 4.f)) *
-                        glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), normalize(glm::vec3(x + 1, 1, z+1)));
+                        glm::rotate(glm::mat4(1.f), glm::radians(45.f * time), s_axis[CubeCount*z + x]);
 
                     bgfx::setTransform(glm::value_ptr(mtx));
 
@@ -411,12 +427,12 @@ namespace visef
 
                     glm::vec4 lightPosInnerRadius;
                     
-                    float radius = 2;
+                    float radius = 3.f;
                     glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
-                    
-                    z += 1.f;
 
-                    glm::vec3 lightPos(x, 0.0, -z);
+                    glm::vec3 lightPos(x * 4.f, 0.0, -z * 4.f);
+
+                    z += 1.f;
 
                     uint8_t val = i & 7;
                     lightRgbRadius[0] = val & 0x1 ? 1.0f : 0.25f;
