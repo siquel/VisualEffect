@@ -269,6 +269,9 @@ namespace visef
             s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Int1);
             m_normal = loadTexture("assets/wall/wall_n.jpg");
 
+            m_woodTexColor = loadTexture("assets/wooden_floor/color.png");
+            m_woodTexNormal = loadTexture("assets/wooden_floor/normal.png");
+
             s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Int1);
             s_light = bgfx::createUniform("s_light", bgfx::UniformType::Int1);
 
@@ -396,8 +399,8 @@ namespace visef
                         bgfx::setVertexBuffer(m_vbh);
                         bgfx::setIndexBuffer(m_ibh);
 
-                        bgfx::setTexture(0, s_diffuse, m_diffuse);
-                        bgfx::setTexture(1, s_normal, m_normal);
+                        bgfx::setTexture(0, s_diffuse, m_woodTexColor);
+                        bgfx::setTexture(1, s_normal, m_woodTexNormal);
 
                         bgfx::setState(0
                             | BGFX_STATE_RGB_WRITE
@@ -540,6 +543,9 @@ namespace visef
 
         bgfx::UniformHandle s_normal;
         bgfx::TextureHandle m_normal;
+
+        bgfx::TextureHandle m_woodTexColor;
+        bgfx::TextureHandle m_woodTexNormal;
     };
 
     static Demo s_demo;
