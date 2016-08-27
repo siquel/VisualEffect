@@ -291,7 +291,7 @@ namespace visef
                 }
 
                 m_lights[i].m_pos = glm::vec3(x * 4.f, 2.f, -z * 4.f);
-                m_lights[i].m_radius = 3.f;
+                m_lights[i].m_radius = 4.f;
                 m_lights[i].m_innerRadius = 0.8f;
                 
                 uint8_t val = i & 7;
