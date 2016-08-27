@@ -608,7 +608,6 @@ namespace visef
 
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
-            bgfx::destroyVertexBuffer(m_lightVbh);
             bgfx::destroyIndexBuffer(m_lightIbh);
 
             bgfx::destroyTexture(m_diffuse);
@@ -622,6 +621,7 @@ namespace visef
             bgfx::destroyProgram(m_geomProgram);
             bgfx::destroyProgram(m_lightProgram);
             bgfx::destroyProgram(m_combineProgram);
+            bgfx::destroyProgram(m_lightGeomProgram);
         }
 
         glm::mat4 m_proj;
@@ -633,7 +633,6 @@ namespace visef
         bgfx::VertexBufferHandle m_vbh;
         bgfx::IndexBufferHandle m_ibh;
 
-        bgfx::VertexBufferHandle m_lightVbh;
         bgfx::IndexBufferHandle m_lightIbh;
 
         bgfx::FrameBufferHandle m_gbuffer;
