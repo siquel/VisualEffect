@@ -166,18 +166,6 @@ namespace visef
         21, 23, 22,
     };
 
-    static PosColor0Vertex s_lightCubeVertices[8] =
-    {
-        { -1.0f,  1.0f,  1.0f, 0xff000000 },
-        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
-        { -1.0f, -1.0f,  1.0f, 0xff00ff00 },
-        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
-        { -1.0f,  1.0f, -1.0f, 0xffff0000 },
-        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
-        { -1.0f, -1.0f, -1.0f, 0xffffff00 },
-        { 1.0f, -1.0f, -1.0f, 0xffffffff },
-    };
-
     static const uint16_t s_lightCubeIndices[36] =
     {
         0, 1, 2, // 0
@@ -193,6 +181,28 @@ namespace visef
         2, 3, 6, // 10
         6, 3, 7,
     };
+
+    void cube(const glm::vec3& rgb)
+    {
+        if (bgfx::checkAvailTransientVertexBuffer(8, PosColor0Vertex::ms_decl))
+        {
+            bgfx::TransientVertexBuffer vb;
+            bgfx::allocTransientVertexBuffer(&vb, 8, PosColor0Vertex::ms_decl);
+
+            PosColor0Vertex* vertex = (PosColor0Vertex*)vb.data;
+            uint32_t abgr = pack4FloatsUint(1.f, rgb.z, rgb.y, rgb.x);
+            vertex[0] = { -1.0f, 1.0f, 1.0f, abgr };
+            vertex[1] = { 1.0f,  1.0f,  1.0f, abgr };
+            vertex[2] = { -1.0f, -1.0f,  1.0f, abgr };
+            vertex[3] = { 1.0f, -1.0f,  1.0f, abgr };
+            vertex[4] = { -1.0f,  1.0f, -1.0f, abgr };
+            vertex[5] = { 1.0f,  1.0f, -1.0f, abgr };
+            vertex[6] = { -1.0f, -1.0f, -1.0f, abgr };
+            vertex[7] = { 1.0f, -1.0f, -1.0f, abgr };
+
+            bgfx::setVertexBuffer(&vb);
+        }
+    }
 
     void screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width = 1.0f, float _height = 1.0f)
     {
@@ -292,12 +302,6 @@ namespace visef
                 z += 1.f;
             }
 
-            //const bgfx::Memory* mem = bgfx::alloc(m_numLights * PosColor0Vertex::ms_decl.m_stride);
-
-            for (uint32_t i = 0; i < m_numLights; ++i)
-            {
-                //mem->data[i]
-            }
         }
 
         void init()
@@ -332,13 +336,6 @@ namespace visef
             m_ibh = bgfx::createIndexBuffer(
                 // Static data can be passed with bgfx::makeRef
                 bgfx::makeRef(s_cubeIndices, sizeof(s_cubeIndices))
-                );
-
-            // Create static vertex buffer.
-            m_lightVbh = bgfx::createVertexBuffer(
-                // Static data can be passed with bgfx::makeRef
-                bgfx::makeRef(s_lightCubeVertices, sizeof(s_lightCubeVertices)),
-                PosColor0Vertex::ms_decl
                 );
 
             // Create static index buffer.
@@ -501,7 +498,7 @@ namespace visef
 
                     bgfx::setTransform(glm::value_ptr(mtx));
 
-                    bgfx::setVertexBuffer(m_lightVbh);
+                    cube(light.m_rgb);
                     bgfx::setIndexBuffer(m_lightIbh);
 
                     bgfx::setState(BGFX_STATE_DEFAULT);
