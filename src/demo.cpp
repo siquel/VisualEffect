@@ -16,9 +16,18 @@
 #include "camera.h"
 #include "resource/texture.h"
 #include "tangents.h"
+#include <vector>
 
 namespace visef
 {
+    struct Light
+    {
+        glm::vec3 m_rgb;
+        glm::vec3 m_pos;
+        float m_radius;
+        float m_innerRadius;
+    };
+
     static Camera s_camera;
 
     const uint32_t CubeCount = 5;
@@ -211,6 +220,27 @@ namespace visef
                     ));
             }
 
+            m_lights.resize(m_numLights);
+            float x = 0, z = 0;
+            for (uint32_t i = 0; i < m_numLights; ++i)
+            {
+                if (i % CubeCount == 0)
+                {
+                    x += 1.f;
+                    z = 0.f;
+                }
+
+                m_lights[i].m_pos = glm::vec3(x * 4.f, 0.0, -z * 4.f);
+                m_lights[i].m_radius = 3.f;
+                m_lights[i].m_innerRadius = 0.8f;
+                
+                uint8_t val = i & 7;
+                m_lights[i].m_rgb.x = val & 0x1 ? 1.0f : 0.25f;
+                m_lights[i].m_rgb.y = val & 0x2 ? 1.0f : 0.25f;
+                m_lights[i].m_rgb.z = val & 0x4 ? 1.0f : 0.25f;
+
+                z += 1.f;
+            }
 
         }
 
@@ -418,36 +448,22 @@ namespace visef
 
             // draw into light pass
             {
-                float x = 0;
-                float z = 0;
                 for (uint32_t i = 0; i < m_numLights; ++i)
                 {
-                    if (i % CubeCount == 0)
-                    {
-                        x += 1.f;
-                        z = 0.f;
-                    }
+                    Light& light = m_lights[i];
 
-                    glm::vec4 lightPosInnerRadius;
-                    
-                    float radius = 3.f;
-                    glm::vec4 lightRgbRadius(1.f, 1.f, 1.f, radius);
-
-                    glm::vec3 lightPos(x * 4.f, 0.0, -z * 4.f);
-
-                    z += 1.f;
-
-                    uint8_t val = i & 7;
-                    lightRgbRadius[0] = val & 0x1 ? 1.0f : 0.25f;
-                    lightRgbRadius[1] = val & 0x2 ? 1.0f : 0.25f;
-                    lightRgbRadius[2] = val & 0x4 ? 1.0f : 0.25f;
-
-
-                    lightPosInnerRadius.x = lightPos.x;
-                    lightPosInnerRadius.y = lightPos.y;
-                    lightPosInnerRadius.z = lightPos.z;
-                    lightPosInnerRadius.w = 0.8f;
-
+                    glm::vec4 lightPosInnerRadius(
+                        light.m_pos.x,
+                        light.m_pos.y,
+                        light.m_pos.z,
+                        light.m_innerRadius
+                        );
+                    glm::vec4 lightRgbRadius(
+                        light.m_rgb.x,
+                        light.m_rgb.y,
+                        light.m_rgb.z,
+                        light.m_radius
+                        );
 
                     bgfx::setUniform(u_lightPositionInnerRadius, glm::value_ptr(lightPosInnerRadius));
                     bgfx::setUniform(u_lightColorRGBRadius, glm::value_ptr(lightRgbRadius));
@@ -548,6 +564,8 @@ namespace visef
 
         bgfx::TextureHandle m_woodTexColor;
         bgfx::TextureHandle m_woodTexNormal;
+
+        std::vector<Light> m_lights;
     };
 
     static Demo s_demo;

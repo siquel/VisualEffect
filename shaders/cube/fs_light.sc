@@ -59,7 +59,7 @@ void main()
   float ambient = 0.1;
 
   vec3 lightColor;
-  lightColor = calcLight(wpos, normal, viewDir) * ambient;
+  lightColor = calcLight(wpos, normal, viewDir); // * ambient;
 
   gl_FragColor.xyz = toGamma(lightColor.xyz);
   gl_FragColor.w = 1.0;
