@@ -9,6 +9,8 @@
 #include "shaders/vs_postprocess.bin.h"
 #include "shaders/vs_light.bin.h"
 #include "shaders/fs_light.bin.h"
+#include "shaders/vs_light_geom.bin.h"
+#include "shaders/fs_light_geom.bin.h"
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
@@ -75,6 +77,25 @@ namespace visef
         static bgfx::VertexDecl ms_decl;
     };
 
+    struct PosColor0Vertex
+    {
+        float m_x;
+        float m_y;
+        float m_z;
+        uint32_t m_abgr;
+
+        static void init()
+        {
+            ms_decl
+                .begin()
+                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true) 
+                .end();
+        };
+
+        static bgfx::VertexDecl ms_decl;
+    };
+
     struct PosUv
     {
         float m_x;
@@ -97,6 +118,7 @@ namespace visef
 
     bgfx::VertexDecl PosNormalTangentTexcoord0Vertex::ms_decl;
     bgfx::VertexDecl PosUv::ms_decl;
+    bgfx::VertexDecl PosColor0Vertex::ms_decl;
 
     static PosNormalTangentTexcoord0Vertex s_cubeVertices[24] =
     {
@@ -142,6 +164,34 @@ namespace visef
         17, 18, 19,
         20, 21, 22,
         21, 23, 22,
+    };
+
+    static PosColor0Vertex s_lightCubeVertices[8] =
+    {
+        { -1.0f,  1.0f,  1.0f, 0xff000000 },
+        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
+        { -1.0f, -1.0f,  1.0f, 0xff00ff00 },
+        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
+        { -1.0f,  1.0f, -1.0f, 0xffff0000 },
+        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
+        { -1.0f, -1.0f, -1.0f, 0xffffff00 },
+        { 1.0f, -1.0f, -1.0f, 0xffffffff },
+    };
+
+    static const uint16_t s_lightCubeIndices[36] =
+    {
+        0, 1, 2, // 0
+        1, 3, 2,
+        4, 6, 5, // 2
+        5, 6, 7,
+        0, 2, 4, // 4
+        4, 2, 6,
+        1, 5, 3, // 6
+        5, 7, 3,
+        0, 4, 1, // 8
+        4, 5, 1,
+        2, 3, 6, // 10
+        6, 3, 7,
     };
 
     void screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width = 1.0f, float _height = 1.0f)
@@ -230,7 +280,7 @@ namespace visef
                     z = 0.f;
                 }
 
-                m_lights[i].m_pos = glm::vec3(x * 4.f, 0.0, -z * 4.f);
+                m_lights[i].m_pos = glm::vec3(x * 4.f, 2.f, -z * 4.f);
                 m_lights[i].m_radius = 3.f;
                 m_lights[i].m_innerRadius = 0.8f;
                 
@@ -242,6 +292,12 @@ namespace visef
                 z += 1.f;
             }
 
+            //const bgfx::Memory* mem = bgfx::alloc(m_numLights * PosColor0Vertex::ms_decl.m_stride);
+
+            for (uint32_t i = 0; i < m_numLights; ++i)
+            {
+                //mem->data[i]
+            }
         }
 
         void init()
@@ -253,6 +309,7 @@ namespace visef
             // Create vertex stream declaration.
             PosNormalTangentTexcoord0Vertex::init();
             PosUv::init();
+            PosColor0Vertex::init();
 
             calculateTangents(
                 s_cubeVertices,
@@ -275,6 +332,19 @@ namespace visef
             m_ibh = bgfx::createIndexBuffer(
                 // Static data can be passed with bgfx::makeRef
                 bgfx::makeRef(s_cubeIndices, sizeof(s_cubeIndices))
+                );
+
+            // Create static vertex buffer.
+            m_lightVbh = bgfx::createVertexBuffer(
+                // Static data can be passed with bgfx::makeRef
+                bgfx::makeRef(s_lightCubeVertices, sizeof(s_lightCubeVertices)),
+                PosColor0Vertex::ms_decl
+                );
+
+            // Create static index buffer.
+            m_lightIbh = bgfx::createIndexBuffer(
+                // Static data can be passed with bgfx::makeRef
+                bgfx::makeRef(s_lightCubeIndices, sizeof(s_lightCubeIndices))
                 );
 
             const uint32_t samplerFlags = 0
@@ -325,6 +395,12 @@ namespace visef
             m_lightProgram = bgfx::createProgram(
                 bgfx::createShader(bgfx::makeRef(vs_light_dx11, sizeof(vs_light_dx11))),
                 bgfx::createShader(bgfx::makeRef(fs_light_dx11, sizeof(fs_light_dx11))),
+                true
+                );
+
+            m_lightGeomProgram = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_light_geom_dx11, sizeof(vs_light_geom_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_light_geom_dx11, sizeof(fs_light_geom_dx11))),
                 true
                 );
 
@@ -413,6 +489,27 @@ namespace visef
                     bgfx::submit(RenderPass::Geometry, m_geomProgram);
                 }
             }
+            // draw lights
+            {
+                for (uint32_t i = 0; i < m_numLights; ++i)
+                {
+                    Light& light = m_lights[i];
+
+                    glm::mat4 mtx =
+                        glm::translate(glm::mat4(1.f), light.m_pos)
+                        * glm::scale(glm::mat4(1.f), glm::vec3(0.25f, 0.25f, 0.25f));
+
+                    bgfx::setTransform(glm::value_ptr(mtx));
+
+                    bgfx::setVertexBuffer(m_lightVbh);
+                    bgfx::setIndexBuffer(m_lightIbh);
+
+                    bgfx::setState(BGFX_STATE_DEFAULT);
+
+                    bgfx::submit(RenderPass::Geometry, m_lightGeomProgram);
+                }
+            }
+
 
             // draw floor 
             {
@@ -514,6 +611,8 @@ namespace visef
 
             bgfx::destroyVertexBuffer(m_vbh);
             bgfx::destroyIndexBuffer(m_ibh);
+            bgfx::destroyVertexBuffer(m_lightVbh);
+            bgfx::destroyIndexBuffer(m_lightIbh);
 
             bgfx::destroyTexture(m_diffuse);
             bgfx::destroyTexture(m_normal);
@@ -537,6 +636,9 @@ namespace visef
         bgfx::VertexBufferHandle m_vbh;
         bgfx::IndexBufferHandle m_ibh;
 
+        bgfx::VertexBufferHandle m_lightVbh;
+        bgfx::IndexBufferHandle m_lightIbh;
+
         bgfx::FrameBufferHandle m_gbuffer;
         bgfx::FrameBufferHandle m_lightBuffer;
 
@@ -550,6 +652,7 @@ namespace visef
         bgfx::ProgramHandle m_geomProgram;
         bgfx::ProgramHandle m_combineProgram;
         bgfx::ProgramHandle m_lightProgram;
+        bgfx::ProgramHandle m_lightGeomProgram;
 
         uint32_t m_numLights;
 
