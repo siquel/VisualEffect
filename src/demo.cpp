@@ -501,6 +501,8 @@ namespace visef
 
             bgfx::destroyTexture(m_diffuse);
             bgfx::destroyTexture(m_normal);
+            bgfx::destroyTexture(m_woodTexColor);
+            bgfx::destroyTexture(m_woodTexNormal);
             
             bgfx::destroyFrameBuffer(m_gbuffer);
             bgfx::destroyFrameBuffer(m_lightBuffer);
