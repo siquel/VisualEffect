@@ -42,7 +42,8 @@ namespace visef
         {
             Geometry,
             Light,
-            Combine
+            Combine,
+            Forward
         };
     };
 
@@ -439,7 +440,7 @@ namespace visef
             bgfx::setViewRect(RenderPass::Geometry, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Light, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Combine, 0, 0, m_width, m_height);
-
+            bgfx::setViewRect(RenderPass::Forward, 0, 0, m_width, m_height);
             float time = float(app()->totalTime()); (void)time;
 
             float ortho[16];
@@ -448,6 +449,7 @@ namespace visef
             
             bgfx::setViewTransform(RenderPass::Geometry, glm::value_ptr(m_view), glm::value_ptr(m_proj));
             bgfx::setViewFrameBuffer(RenderPass::Geometry, m_gbuffer);
+            bgfx::setViewTransform(RenderPass::Forward, glm::value_ptr(m_view), glm::value_ptr(m_proj));
             
             bgfx::setViewTransform(RenderPass::Light, NULL, ortho);
             bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
@@ -456,7 +458,7 @@ namespace visef
             
             glm::mat4 invMVP(glm::inverse(m_proj * m_view));
 
-            
+            bgfx::touch(RenderPass::Forward);
 
             // draw into geom pass
             for (uint32_t z = 0; z <= CubeCount; ++z)
@@ -484,26 +486,6 @@ namespace visef
                         );
 
                     bgfx::submit(RenderPass::Geometry, m_geomProgram);
-                }
-            }
-            // draw lights
-            {
-                for (uint32_t i = 0; i < m_numLights; ++i)
-                {
-                    Light& light = m_lights[i];
-
-                    glm::mat4 mtx =
-                        glm::translate(glm::mat4(1.f), light.m_pos)
-                        * glm::scale(glm::mat4(1.f), glm::vec3(0.25f, 0.25f, 0.25f));
-
-                    bgfx::setTransform(glm::value_ptr(mtx));
-
-                    cube(light.m_rgb);
-                    bgfx::setIndexBuffer(m_lightIbh);
-
-                    bgfx::setState(BGFX_STATE_DEFAULT);
-
-                    bgfx::submit(RenderPass::Geometry, m_lightGeomProgram);
                 }
             }
 
@@ -590,6 +572,31 @@ namespace visef
                     );
                 screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
                 bgfx::submit(RenderPass::Combine, m_combineProgram);
+            }
+
+
+            // draw lights
+            {
+                for (uint32_t i = 0; i < m_numLights; ++i)
+                {
+                    Light& light = m_lights[i];
+
+                    glm::mat4 mtx =
+                        glm::translate(glm::mat4(1.f), light.m_pos)
+                        * glm::scale(glm::mat4(1.f), glm::vec3(0.25f, 0.25f, 0.25f));
+
+                    bgfx::setTransform(glm::value_ptr(mtx));
+
+                    cube(light.m_rgb);
+                    bgfx::setIndexBuffer(m_lightIbh);
+
+                    bgfx::setState(0
+                        | BGFX_STATE_RGB_WRITE
+                        | BGFX_STATE_ALPHA_WRITE
+                        );
+
+                    bgfx::submit(RenderPass::Forward, m_lightGeomProgram);
+                }
             }
         }
 
