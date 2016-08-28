@@ -191,7 +191,7 @@ namespace visef
             bgfx::allocTransientVertexBuffer(&vb, 8, PosColor0Vertex::ms_decl);
 
             PosColor0Vertex* vertex = (PosColor0Vertex*)vb.data;
-            uint32_t abgr = pack4FloatsUint(1.f, rgb.z, rgb.y, rgb.x);
+            uint32_t abgr = pack4FloatsUint(rgb.x, rgb.y, rgb.z, 1.f);
             vertex[0] = { -1.0f, 1.0f, 1.0f, abgr };
             vertex[1] = { 1.0f,  1.0f,  1.0f, abgr };
             vertex[2] = { -1.0f, -1.0f,  1.0f, abgr };
