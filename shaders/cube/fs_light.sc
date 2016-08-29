@@ -61,6 +61,5 @@ void main()
   vec3 lightColor;
   lightColor = calcLight(wpos, normal, viewDir); // * ambient;
 
-  gl_FragColor.xyz = toGamma(lightColor.xyz);
-  gl_FragColor.w = 1.0;
+  gl_FragColor = vec4(toGamma(lightColor.xyz), 1.0);
 }

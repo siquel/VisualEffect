@@ -11,6 +11,8 @@
 #include "shaders/fs_light.bin.h"
 #include "shaders/vs_light_geom.bin.h"
 #include "shaders/fs_light_geom.bin.h"
+#include "shaders/vs_bloom.bin.h"
+#include "shaders/fs_bloom.bin.h"
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
@@ -43,6 +45,7 @@ namespace visef
             Geometry,
             Light,
             Combine,
+            Effects,
             Forward
         };
     };
@@ -359,7 +362,14 @@ namespace visef
             m_gbufferTex[2] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::D24, samplerFlags);
 
             m_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_gbufferTex), m_gbufferTex, true);
+
+            m_lightTex[0] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
+            m_lightTex[1] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags); // bloom
+
+
             m_lightBuffer = bgfx::createFrameBuffer(m_width, m_height, bgfx::TextureFormat::BGRA8, samplerFlags);
+
+            m_bloomBuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_lightTex), m_lightTex, true);
 
             s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1);
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
@@ -402,6 +412,12 @@ namespace visef
                 true
                 );
 
+            m_bloomProgram = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_bloom_dx11, sizeof(vs_bloom_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_bloom_dx11, sizeof(fs_bloom_dx11))),
+                true
+                );
+
             // Set palette color for index 0
             bgfx::setPaletteColor(0, UINT32_C(0x00000000));
 
@@ -423,6 +439,7 @@ namespace visef
                 BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                 1.0f,
                 0,
+                0,
                 0
                 );
 
@@ -440,6 +457,7 @@ namespace visef
             bgfx::setViewRect(RenderPass::Geometry, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Light, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Combine, 0, 0, m_width, m_height);
+            bgfx::setViewRect(RenderPass::Effects, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Forward, 0, 0, m_width, m_height);
             float time = float(app()->totalTime()); (void)time;
 
@@ -454,8 +472,11 @@ namespace visef
             bgfx::setViewTransform(RenderPass::Light, NULL, ortho);
             bgfx::setViewFrameBuffer(RenderPass::Light, m_lightBuffer);
 
+            bgfx::setViewFrameBuffer(RenderPass::Combine, m_bloomBuffer);
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
+            bgfx::setViewTransform(RenderPass::Effects, NULL, ortho);
+
             glm::mat4 invMVP(glm::inverse(m_proj * m_view));
 
             bgfx::touch(RenderPass::Forward);
@@ -576,7 +597,7 @@ namespace visef
 
 
             // draw lights
-            {
+          /*  {
                 for (uint32_t i = 0; i < m_numLights; ++i)
                 {
                     Light& light = m_lights[i];
@@ -597,6 +618,18 @@ namespace visef
 
                     bgfx::submit(RenderPass::Forward, m_lightGeomProgram);
                 }
+            }*/
+
+            // draw bloom
+            {
+                bgfx::setTexture(0, s_albedo, m_bloomBuffer, 0);
+                bgfx::setTexture(1, s_light, m_bloomBuffer, 1);
+                bgfx::setState(0
+                    | BGFX_STATE_RGB_WRITE
+                    | BGFX_STATE_ALPHA_WRITE
+                    );
+                screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
+                bgfx::submit(RenderPass::Effects, m_bloomProgram);
             }
         }
 
@@ -644,8 +677,10 @@ namespace visef
 
         bgfx::FrameBufferHandle m_gbuffer;
         bgfx::FrameBufferHandle m_lightBuffer;
+        bgfx::FrameBufferHandle m_bloomBuffer;
 
         bgfx::TextureHandle m_gbufferTex[3]; // position, normal, depth
+        bgfx::TextureHandle m_lightTex[2]; // deferred, brightness used for bloom
 
         bgfx::UniformHandle s_albedo;
         bgfx::UniformHandle s_depth;
@@ -656,6 +691,7 @@ namespace visef
         bgfx::ProgramHandle m_combineProgram;
         bgfx::ProgramHandle m_lightProgram;
         bgfx::ProgramHandle m_lightGeomProgram;
+        bgfx::ProgramHandle m_bloomProgram;
 
         uint32_t m_numLights;
 

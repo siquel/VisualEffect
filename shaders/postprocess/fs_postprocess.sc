@@ -17,6 +17,11 @@ void main()
   vec4 color = toLinear(texture2D(s_albedo, uv));
   vec4 light = toLinear(texture2D(s_light, uv));
 
+  vec4 c = toGamma(color * light);
+  gl_FragData[0] = c;
 
-  gl_FragColor = toGamma(color * light);
+  float BloomThreshold = 0.1;
+
+  gl_FragData[1] = saturate((c - BloomThreshold) / (1 - BloomThreshold));
+
 }
