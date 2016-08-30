@@ -28,5 +28,7 @@ void main()
   base = adjustSaturation(base, BloomSaturation) * BloomIntensity;
   bloom = adjustSaturation(bloom, BloomSaturation) * BloomIntensity;
 
+  base *= (1 - saturate(bloom));
+
   gl_FragColor = base + bloom;
 }

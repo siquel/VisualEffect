@@ -13,6 +13,8 @@
 #include "shaders/fs_light_geom.bin.h"
 #include "shaders/vs_bloom.bin.h"
 #include "shaders/fs_bloom.bin.h"
+#include "shaders/fs_gaussian_hori.bin.h"
+#include "shaders/vs_gaussian.bin.h"
 #include "visef.h"
 #include <stdio.h>
 #include <bx/fpumath.h>
@@ -46,6 +48,7 @@ namespace visef
             Light,
             Combine,
             Effects,
+            Blur,
             Forward
         };
     };
@@ -371,6 +374,10 @@ namespace visef
 
             m_bloomBuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_lightTex), m_lightTex, true);
 
+            m_pingPongBufferTex[0] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
+            m_pingPongBufferTex[1] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
+            m_pingPongBuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_pingPongBufferTex), m_pingPongBufferTex, true);
+
             s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1);
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
 
@@ -418,6 +425,12 @@ namespace visef
                 true
                 );
 
+            m_gaussianHorizontal = bgfx::createProgram(
+                bgfx::createShader(bgfx::makeRef(vs_gaussian_dx11, sizeof(vs_gaussian_dx11))),
+                bgfx::createShader(bgfx::makeRef(fs_gaussian_hori_dx11, sizeof(fs_gaussian_hori_dx11))),
+                true
+                );
+
             // Set palette color for index 0
             bgfx::setPaletteColor(0, UINT32_C(0x00000000));
 
@@ -459,6 +472,7 @@ namespace visef
             bgfx::setViewRect(RenderPass::Combine, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Effects, 0, 0, m_width, m_height);
             bgfx::setViewRect(RenderPass::Forward, 0, 0, m_width, m_height);
+            bgfx::setViewRect(RenderPass::Blur, 0, 0, m_width, m_height);
             float time = float(app()->totalTime()); (void)time;
 
             float ortho[16];
@@ -476,6 +490,7 @@ namespace visef
             bgfx::setViewTransform(RenderPass::Combine, NULL, ortho);
             
             bgfx::setViewTransform(RenderPass::Effects, NULL, ortho);
+            bgfx::setViewTransform(RenderPass::Blur, NULL, ortho);
 
             glm::mat4 invMVP(glm::inverse(m_proj * m_view));
 
@@ -620,10 +635,24 @@ namespace visef
                 }
             }*/
 
+            
+            {
+                bgfx::setViewFrameBuffer(RenderPass::Blur, m_pingPongBuffer);
+                bgfx::setTexture(0, s_albedo, m_bloomBuffer, 0);
+
+                bgfx::setState(0
+                    | BGFX_STATE_RGB_WRITE
+                    | BGFX_STATE_ALPHA_WRITE
+                    );
+
+                screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
+                bgfx::submit(RenderPass::Blur, m_gaussianHorizontal);
+            }
+
             // draw bloom
             {
                 bgfx::setTexture(0, s_albedo, m_bloomBuffer, 0);
-                bgfx::setTexture(1, s_light, m_bloomBuffer, 1);
+                bgfx::setTexture(1, s_light, m_pingPongBuffer, 0);
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
@@ -678,9 +707,15 @@ namespace visef
         bgfx::FrameBufferHandle m_gbuffer;
         bgfx::FrameBufferHandle m_lightBuffer;
         bgfx::FrameBufferHandle m_bloomBuffer;
+        bgfx::FrameBufferHandle m_pingPongBuffer;
 
         bgfx::TextureHandle m_gbufferTex[3]; // position, normal, depth
         bgfx::TextureHandle m_lightTex[2]; // deferred, brightness used for bloom
+
+        bgfx::TextureHandle m_pingPongBufferTex[2];
+
+        bgfx::ProgramHandle m_gaussianHorizontal;
+        bgfx::ProgramHandle m_gaussianVertical;
 
         bgfx::UniformHandle s_albedo;
         bgfx::UniformHandle s_depth;
