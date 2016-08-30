@@ -376,7 +376,8 @@ namespace visef
 
             m_pingPongBufferTex[0] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
             m_pingPongBufferTex[1] = bgfx::createTexture2D(m_width, m_height, 1, bgfx::TextureFormat::BGRA8, samplerFlags);
-            m_pingPongBuffer = bgfx::createFrameBuffer(BX_COUNTOF(m_pingPongBufferTex), m_pingPongBufferTex, true);
+            m_pingPongBuffer[0] = bgfx::createFrameBuffer(1, &m_pingPongBufferTex[0], true);
+            m_pingPongBuffer[1] = bgfx::createFrameBuffer(1, &m_pingPongBufferTex[1], true);
 
             s_diffuse = bgfx::createUniform("s_diffuse", bgfx::UniformType::Int1);
             m_diffuse = loadTexture("assets/wall/wall_d.jpg");
@@ -637,22 +638,25 @@ namespace visef
 
             
             {
-                bgfx::setViewFrameBuffer(RenderPass::Blur, m_pingPongBuffer);
+                bgfx::setViewFrameBuffer(RenderPass::Blur, m_pingPongBuffer[0]);
+
                 bgfx::setTexture(0, s_albedo, m_bloomBuffer, 0);
+
 
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
                     );
-
                 screenSpaceQuad(float(m_width), float(m_height), 0.f, false);
                 bgfx::submit(RenderPass::Blur, m_gaussianHorizontal);
+
+
             }
 
             // draw bloom
             {
                 bgfx::setTexture(0, s_albedo, m_bloomBuffer, 0);
-                bgfx::setTexture(1, s_light, m_pingPongBuffer, 0);
+                bgfx::setTexture(1, s_light, m_pingPongBuffer[0], 0);
                 bgfx::setState(0
                     | BGFX_STATE_RGB_WRITE
                     | BGFX_STATE_ALPHA_WRITE
@@ -707,7 +711,7 @@ namespace visef
         bgfx::FrameBufferHandle m_gbuffer;
         bgfx::FrameBufferHandle m_lightBuffer;
         bgfx::FrameBufferHandle m_bloomBuffer;
-        bgfx::FrameBufferHandle m_pingPongBuffer;
+        bgfx::FrameBufferHandle m_pingPongBuffer[2];
 
         bgfx::TextureHandle m_gbufferTex[3]; // position, normal, depth
         bgfx::TextureHandle m_lightTex[2]; // deferred, brightness used for bloom
