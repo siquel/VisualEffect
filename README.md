@@ -6,15 +6,13 @@ Click to play video on YouTube.
 # Requirements
 - [x] Documentation
 
-## Minimum (for grade 1) 
+## Tasks 
 - [x] Bling Phong shading with 1 texture
 - [x] Normal mapped object
 - [x] Bump mapped object
-
-## Better grade
 - [x] Bloom (not so good)
 - [ ] Emboss
-- [x] Deferred shading
+- [x] Deferred shading (256 lights)
 - [ ] Cubemaps?
 - [ ] Reflection
 - [ ] Raymarching
