@@ -1,19 +1,24 @@
+# Visual Effect programming
+Click to play video on YouTube. 
+[![Video on youtube](https://img.youtube.com/vi/haxyDs3ujJU/0.jpg)](https://www.youtube.com/watch?v=haxyDs3ujJU)
+
 # Requirements
-- [ ] Documentation (web) mandatory!
+- [x] Documentation
 
 ## Minimum (for grade 1) 
-- [ ] Bling Phong shading with 1 texture
-- [ ] Normal mapped object
-- [ ] Bump mapped object
+- [x] Bling Phong shading with 1 texture
+- [x] Normal mapped object
+- [x] Bump mapped object
 
 ## Better grade
-- [ ] Bloom
+- [x] Bloom (not so good)
 - [ ] Emboss
-- [ ] Deferred shading sounds fun
+- [x] Deferred shading
 - [ ] Cubemaps?
 - [ ] Reflection
 - [ ] Raymarching
 - [ ] Shadows
+- [x] Post processing (sin wave)
 
 # Building
 ## Windows
